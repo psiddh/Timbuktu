@@ -18,9 +18,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:enabled="true"
+            android:name=".service.TimbuktuService" />
+
         <meta-data android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDcGmi8G1hTU5Pf8bHd8xWVfxmd5j3932w" />
-        <service android:enabled="true" android:name=".service.TimbuktuService"/>
     </application>
 
 </manifest>

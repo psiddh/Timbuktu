@@ -19,10 +19,11 @@ import java.util.List;
 import java.util.Locale;
 
 import app.com.timbuktu.GeoDecoder;
-import app.com.timbuktu.TravelItem;
+import app.com.timbuktu.MediaItem;
+import app.com.timbuktu.MediaItem;
 import app.com.timbuktu.UserFilterAnalyzer;
 
-public class TravelDetailsTask extends AsyncTask<Object, TravelItem, Object> {
+public class TravelDetailsTask extends AsyncTask<Object, MediaItem, Object> {
 
     private int mPictureId = -1;
     private int mPictureDisplayName = -1;
@@ -81,7 +82,7 @@ public class TravelDetailsTask extends AsyncTask<Object, TravelItem, Object> {
     }
 
     @Override
-    public void onProgressUpdate(TravelItem... params) {
+    public void onProgressUpdate(MediaItem... params) {
 
     }
 

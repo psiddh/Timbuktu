@@ -18,18 +18,15 @@ import java.util.Stack;
 
 public class TimbuktuService extends Service implements Loader.OnLoadCompleteListener<Cursor> {
 
-    private static final int LOADER_ID = 50001;
+    private static final int LOADER_ID = 10001;
     private static final String TAG = "TimbuktuService";
-    // TBD: We may not need this as we will never ever try to stop the service from thread (Async Task)
-    private static Stack<Integer> mServiceIds = new Stack<>();
-
-    private List<Integer> mEventIds = new ArrayList<>();
-
+    private int startWhat = 0;
     private CursorLoader mCursorLoader = null;
-
     // This is the object that receives interactions from clients.  See
     // RemoteService for a more complete example.
     private final IBinder mBinder = new LocalBinder();
+
+    public static final String SCAN_MEDIA = "app.com.timbuktu.ACTION-SCAN-MEDIA";
 
     /**
      * Class for clients to access.  Because we know this service always
@@ -45,7 +42,8 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
 
     @Override
     public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
-        new TravelDetailsTask(this, data).execute();
+        if (startWhat == 1)
+            new SyncMediaDetails(this, data).execute();
     }
 
     @Override
@@ -55,13 +53,8 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if (mServiceIds.size() > 1) {
-            Log.d(TAG, "At-least one instance of the service is running " + mServiceIds.size());
-        }
-        int what = (intent == null) ? 0 : intent.getIntExtra("start-task-what", 0);
-        if (what == 0) {
-            // start all
-
+        if (intent.getAction().equalsIgnoreCase(SCAN_MEDIA)) {
+            startWhat = 1;
         }
         createCursorLoader();
 
@@ -81,8 +74,6 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
     public void stop() {
         clear();
         int stopId = -1;
-        if (mServiceIds.size() > 0)
-            stopId = mServiceIds.pop();
         Log.d(TAG, "Stopping the service #: " + stopId);
         if (stopId != -1)
             stopSelf(stopId);
@@ -99,8 +90,6 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
             mCursorLoader.cancelLoad();
             mCursorLoader.stopLoading();
         }
-
-        mEventIds.clear();
     }
 
     public void createCursorLoader() {

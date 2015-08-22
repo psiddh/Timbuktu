@@ -2,6 +2,7 @@ package app.com.timbuktu;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.os.Build;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.widget.ImageView;
 
+import app.com.timbuktu.service.TimbuktuService;
 import app.com.timbuktu.util.SystemUiHider;
 
 public class activity_fragmentview extends FragmentActivity implements Animation.AnimationListener, View.OnTouchListener, map_fragmentview.Listener {
@@ -93,6 +95,11 @@ public class activity_fragmentview extends FragmentActivity implements Animation
                 R.id.mapFragment);
         mSystemUiHider = SystemUiHider.getInstance(this, fragment.getView(), HIDER_FLAGS);
         mSystemUiHider.setup();
+
+        // use this to start and trigger a service
+        Intent i= new Intent(this, TimbuktuService.class);
+        i.setAction(TimbuktuService.SCAN_MEDIA);
+        startService(i);
 
         mSystemUiHider
                 .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
