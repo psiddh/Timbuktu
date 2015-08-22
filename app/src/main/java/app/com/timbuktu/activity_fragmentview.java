@@ -96,11 +96,6 @@ public class activity_fragmentview extends FragmentActivity implements Animation
         mSystemUiHider = SystemUiHider.getInstance(this, fragment.getView(), HIDER_FLAGS);
         mSystemUiHider.setup();
 
-        // use this to start and trigger a service
-        Intent i= new Intent(this, TimbuktuService.class);
-        i.setAction(TimbuktuService.SCAN_MEDIA);
-        startService(i);
-
         mSystemUiHider
                 .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
                     // Cached values.
@@ -125,6 +120,8 @@ public class activity_fragmentview extends FragmentActivity implements Animation
                             /*controlsView.animate()
                                     .translationY(visible ? 0 : mControlsHeight)
                                     .setDuration(mShortAnimTime);*/
+
+
                         } else {
                             // If the ViewPropertyAnimator APIs aren't
                             // available, simply show or hide the in-layout UI
@@ -136,6 +133,7 @@ public class activity_fragmentview extends FragmentActivity implements Animation
                             // Schedule a hide().
                             delayedHide(AUTO_HIDE_DELAY_MILLIS);
                         }
+
                     }
                 });
     }
@@ -147,7 +145,7 @@ public class activity_fragmentview extends FragmentActivity implements Animation
         // Trigger the initial hide() shortly after the activity has been
         // created, to briefly hint to the user that UI controls
         // are available.
-        delayedHide(100);
+        delayedHide(5000);
     }
 
 
@@ -179,8 +177,11 @@ public class activity_fragmentview extends FragmentActivity implements Animation
      * previously scheduled calls.
      */
     private void delayedHide(int delayMillis) {
-        //mHideHandler.removeCallbacks(mHideRunnable);
-        //mHideHandler.postDelayed(mHideRunnable, delayMillis);
+
+        // use this to start and trigger a service
+        Intent i= new Intent(getApplicationContext(), TimbuktuService.class);
+        i.setAction(TimbuktuService.SCAN_MEDIA);
+        startService(i);
     }
 
     @Override
@@ -243,6 +244,8 @@ public class activity_fragmentview extends FragmentActivity implements Animation
                 {
                     matrix.set(savedMatrix);
                     matrix.postTranslate(event.getX() - start.x, event.getY() - start.y); // create the transformation in the matrix  of points
+
+
                 }
                 else if (mode == ZOOM)
                 {

@@ -42,8 +42,12 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
 
     @Override
     public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
-        if (startWhat == 1)
+        Log.d(TAG, "DBG: In on onLoadComplete");
+
+        if (startWhat == 1) {
             new SyncMediaDetails(this, data).execute();
+            Log.d(TAG, "DBG: Start SyncMediaDetails");
+        }
     }
 
     @Override
@@ -53,6 +57,7 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        Log.d(TAG, "DBG: In on create");
         if (intent.getAction().equalsIgnoreCase(SCAN_MEDIA)) {
             startWhat = 1;
         }
