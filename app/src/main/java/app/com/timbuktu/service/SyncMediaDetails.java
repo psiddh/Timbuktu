@@ -19,7 +19,7 @@ import app.com.timbuktu.MediaItem;
 import app.com.timbuktu.SyncCache;
 
 
-public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Object> {
+public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
 
     private int mPictureId = -1;
     private int mPictureDisplayName = -1;
@@ -60,18 +60,18 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Object> {
     }
 
     @Override
-    protected Object doInBackground(Object... params) {
+    protected Integer doInBackground(Object... params) {
         try {
             startClustering(mCursor);
         } catch (Exception e) {
             e.printStackTrace();
         }
         Log.d(TAG, "Start Clustering!");
-        return null;
+        return mCursor.getCount();
     }
 
     @Override
-    public void onProgressUpdate(MediaItem... params) {
+    protected void onProgressUpdate(MediaItem... params) {
         mDialog.incrementProgressBy(params.length);
     }
 
@@ -81,7 +81,7 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Object> {
     }
 
     @Override
-    protected void onPostExecute(Object result) {
+    protected void onPostExecute(Integer result) {
         mDialog.dismiss();
     }
 
@@ -127,16 +127,17 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Object> {
                     MediaStore.Files.FileColumns.MEDIA_TYPE );
         }
         // Work your way from the latest pics!
-        cur.moveToLast();
+        cur.moveToFirst();
     }
 
     private void setupDialog() {
         mDialog = new ProgressDialog(mContext);
-        mDialog.setTitle("Hola! Scanning in progress");
+        mDialog.setTitle("Hola!");
         mDialog.setMessage("Please wait while we setup few things");
         mDialog.setIndeterminate(false);
         mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         mDialog.setMax(mCursor.getCount());
+        mDialog.setCanceledOnTouchOutside(false);
         mDialog.show();
     }
 
@@ -186,8 +187,9 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Object> {
             MediaItem item = new MediaItem(id, path, timestamp, lat, lng, addresses, isVideo);
             mSyncCache.addMediaItem(id, item);
             publishProgress(item);
+            cur.moveToNext();
 
-        } while (!cur.isClosed() && !cur.isFirst() && !cur.isBeforeFirst());
+        } while (!cur.isClosed() && !cur.isLast() && !cur.isAfterLast());
     }
 
     public List<Address> getAddress(double lat, double lng) {

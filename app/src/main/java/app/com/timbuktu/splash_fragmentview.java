@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.util.FloatMath;
@@ -27,7 +28,7 @@ import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.service.TimbuktuService;
 import app.com.timbuktu.util.SystemUiHider;
 
-public class splash_fragmentview extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor> {
+public class splash_fragmentview extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, VoiceInputView.OnVoiceInputListener {
     private static final String TAG = "splash_fragmentview";
 
     /**
@@ -65,6 +66,8 @@ public class splash_fragmentview extends Activity implements Animation.Animation
     // Animation
     private Animation mAnimZoomIn;
 
+    private VoiceInputView mVoiceInputView;
+
     @SuppressWarnings("unused")
     private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
 
@@ -93,7 +96,8 @@ public class splash_fragmentview extends Activity implements Animation.Animation
         TextView view = (TextView) findViewById(R.id.textview);
         mSystemUiHider = SystemUiHider.getInstance(this, view, HIDER_FLAGS);
         mSystemUiHider.setup();
-
+        mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
+        mVoiceInputView.setOnVoiceInputListener(this);
     }
 
     @Override
@@ -155,7 +159,8 @@ public class splash_fragmentview extends Activity implements Animation.Animation
 
     @Override
     public void onLoadComplete(Loader<Cursor> loader, Cursor data) {
-        Log.d(TAG, "DBG: In on onLoadComplete");
+        if (Looper.myLooper() == Looper.getMainLooper())
+            Log.d(TAG, "DBG: In on onLoadComplete");
         new SyncMediaDetails(this, data).execute();
     }
 
@@ -203,5 +208,15 @@ public class splash_fragmentview extends Activity implements Animation.Animation
 
         mCursorLoader.registerListener(10001, this);
         mCursorLoader.startLoading();
+    }
+
+    @Override
+    public void onVoiceInputStart() {
+
+    }
+
+    @Override
+    public void onVoiceInputDone(String text) {
+
     }
 }
