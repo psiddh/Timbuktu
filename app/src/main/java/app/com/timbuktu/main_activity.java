@@ -1,35 +1,36 @@
 package app.com.timbuktu;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.provider.MediaStore;
-import android.support.v4.app.FragmentActivity;
-import android.util.FloatMath;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
+import android.widget.ViewSwitcher;
+
+import java.util.ArrayList;
 
 import app.com.timbuktu.service.SyncMediaDetails;
-import app.com.timbuktu.service.TimbuktuService;
 import app.com.timbuktu.util.SystemUiHider;
 
-public class splash_fragmentview extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, VoiceInputView.OnVoiceInputListener {
-    private static final String TAG = "splash_fragmentview";
+public class main_activity extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, VoiceInputView.OnVoiceInputListener {
+    private static final String TAG = "main_activity";
 
     /**
      * Whether or not the system UI should be auto-hidden after
@@ -86,15 +87,81 @@ public class splash_fragmentview extends Activity implements Animation.Animation
     PointF mid = new PointF();
     float oldDist = 1f;
 
+    static private ArrayList<String> mMatchResults  = new ArrayList<>(0);
+    static private TextSwitcher mSwitcher;
+    static int mTimeOutTextVals = 200;
+    static private int mIndex = 0;
+
+    private static final int SHOW_ANIM_TEXT = 1003;
+
+    private static Handler mTextSwictherHandler = new Handler() {
+        public void handleMessage (Message msg) {
+            switch (msg.what) {
+                case SHOW_ANIM_TEXT:
+                    //success handling
+                    updateTextSwitcherText();
+                    break;
+                default:
+                    //failure handling
+                    break;
+            }
+        }
+    };
+
+    // method to Update the TextSwitcher Text
+    static private void updateTextSwitcherText() {
+
+        if (mIndex + 1 < mMatchResults.size()) {
+            mSwitcher.setText(mMatchResults.get(mIndex++));
+            Message mesg = new Message();
+            mesg.what = SHOW_ANIM_TEXT;
+            mTextSwictherHandler.sendMessageDelayed(mesg, mTimeOutTextVals);
+        } else {
+            mIndex = 0;
+            mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
+            mSwitcher.setText(mMatchResults.get(0) + "...");
+        }
+    }
+
+    public void setupTextSwitcher() {
+        mSwitcher = (TextSwitcher) findViewById(R.id.textSwitcher);
+        // Set the ViewFactory of the TextSwitcher that will create TextView object when asked
+        mSwitcher.setFactory(new ViewSwitcher.ViewFactory() {
+            public View makeView() {
+                // TODO Auto-generated method stub
+                // create new textView and set the properties like color, size etc
+                TextView myText = new TextView(getBaseContext());
+                myText.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+                myText.setTextSize(24);
+                myText.setTextColor(Color.rgb(128, 128, 128));
+                return myText;
+            }
+        });
+        // Declare the in and out animations and initialize them
+        Animation in = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
+        Animation out = AnimationUtils.loadAnimation(this,android.R.anim.fade_out);
+
+        // set the animation type of textSwitcher
+        mSwitcher.setInAnimation(in);
+        mSwitcher.setOutAnimation(out);
+
+        /*updateTextSwitcherText();
+
+        Message msg = new Message();
+        msg.what = SHOW_ANIM_TEXT;
+            mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
+        mTextSwictherHandler.sendMessageDelayed(msg, mTimeOutTextVals);*/
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.splash_activity);
+        setContentView(R.layout.main_activity);
         createCursorLoader();
+        setupTextSwitcher();
 
-        TextView view = (TextView) findViewById(R.id.textview);
-        mSystemUiHider = SystemUiHider.getInstance(this, view, HIDER_FLAGS);
+        mSystemUiHider = SystemUiHider.getInstance(this, mSwitcher, HIDER_FLAGS);
         mSystemUiHider.setup();
         mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
         mVoiceInputView.setOnVoiceInputListener(this);
@@ -110,6 +177,27 @@ public class splash_fragmentview extends Activity implements Animation.Animation
         delayedHide(5000);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mMatchResults.size() > 0) {
+            Message msg = new Message();
+            msg.what = SHOW_ANIM_TEXT;
+            //mTextSwictherHandler.sendMessageDelayed(msg, mTimeOutTextVals);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
+    }
 
     /**
      * Touch listener to use for in-layout UI controls to delay hiding the
@@ -217,6 +305,21 @@ public class splash_fragmentview extends Activity implements Animation.Animation
 
     @Override
     public void onVoiceInputDone(String text) {
+
+    }
+
+    @Override
+    public void onVoiceMatchResults(ArrayList<String> matchResults) {
+        mMatchResults.clear();
+        mMatchResults = new ArrayList<>(matchResults);
+        Message msg = new Message();
+        msg.what = SHOW_ANIM_TEXT;
+        mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
+        mTextSwictherHandler.sendMessageDelayed(msg, mTimeOutTextVals);
+    }
+
+    @Override
+    public void onVoiceStatus(String text) {
 
     }
 }

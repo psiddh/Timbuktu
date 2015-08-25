@@ -2,6 +2,7 @@ package app.com.timbuktu;
 
 import java.util.ArrayList;
 
+import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
@@ -13,14 +14,22 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.TextSwitcher;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 public class VoiceInputView extends View implements RecognitionListener {
 
@@ -45,6 +54,10 @@ public class VoiceInputView extends View implements RecognitionListener {
     private SpeechRecognizer mSpeech = null;
     private Intent mRecognizerIntent;
 
+
+
+
+
     public VoiceInputView(Context context) {
         super(context);
         init();
@@ -61,12 +74,33 @@ public class VoiceInputView extends View implements RecognitionListener {
 
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.argb(255, 219, 219, 219));
+        mPaint.setColor(Color.argb(255, 190, 220, 230));
 
         int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 40, getContext().getResources().getDisplayMetrics());
         mMinRadius = px / 2;
         mCurrentRadius = mMinRadius;
+        mAnimatorSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                //mCurrentRadius = mMinRadius;
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+                //mCurrentRadius = mMinRadius;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
 
         setupSpeechRecognition();
     }
@@ -80,7 +114,7 @@ public class VoiceInputView extends View implements RecognitionListener {
                         repeatAnimation();
                     }
                 },
-                1000);
+                1200);
     }
     private void setupSpeechRecognition() {
         mSpeech = SpeechRecognizer.createSpeechRecognizer(getContext());
@@ -112,6 +146,7 @@ public class VoiceInputView extends View implements RecognitionListener {
         }
     }
 
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -125,10 +160,10 @@ public class VoiceInputView extends View implements RecognitionListener {
 
         switch (mState){
             case STATE_NORMAL:
-                canvas.drawBitmap(mNormalBitmap, width / 2 - mMinRadius,  height / 2 - mMinRadius, mPaint);
+                canvas.drawBitmap(mNormalBitmap, width / 2 - mMinRadius -10,  height / 2 - mMinRadius, mPaint);
                 break;
             case STATE_PRESSED:
-                canvas.drawBitmap(mPressedBitmap, width / 2 - mMinRadius,  height / 2 - mMinRadius, mPaint);
+                canvas.drawBitmap(mPressedBitmap, width / 2 - mMinRadius - 10,  height / 2 - mMinRadius, mPaint);
                 break;
         }
     }
@@ -150,8 +185,9 @@ public class VoiceInputView extends View implements RecognitionListener {
             mAnimatorSet.cancel();
         }
         mAnimatorSet.playSequentially(
-                ObjectAnimator.ofFloat(this, "CurrentRadius", getCurrentRadius(), radius).setDuration(50),
-                ObjectAnimator.ofFloat(this, "CurrentRadius", radius, mMinRadius).setDuration(600)
+                ObjectAnimator.ofFloat(this, "CurrentRadius", getCurrentRadius(), 2 * getCurrentRadius()).setDuration(300),
+                ObjectAnimator.ofFloat(this, "CurrentRadius", 2*getCurrentRadius(), 3 * getCurrentRadius()).setDuration(300),
+                ObjectAnimator.ofFloat(this, "CurrentRadius", 3 * getCurrentRadius() , getCurrentRadius()).setDuration(600)
         );
         mAnimatorSet.start();
     }
@@ -170,11 +206,10 @@ public class VoiceInputView extends View implements RecognitionListener {
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
                 Log.d(TAG, "ACTION_DOWN");
+                invalidate();
                 mState = STATE_PRESSED;
                 mSpeech.startListening(mRecognizerIntent);
-                repeatAnimation();
                 mOnVoiceInputListener.onVoiceInputStart();
-                invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
                 Log.d(TAG, "ACTION_UP");
@@ -200,22 +235,27 @@ public class VoiceInputView extends View implements RecognitionListener {
     public static interface OnVoiceInputListener{
         public void onVoiceInputStart();
         public void onVoiceInputDone(String text);
+        public void onVoiceMatchResults( ArrayList<String> matchResults);
+        public void onVoiceStatus(String text);
+
     }
 
     @Override
     public void onResults(Bundle results) {
         Log.i(TAG, "onResults");
         bCancelAnimation = true;
-        ArrayList<String> matches = results
+        ArrayList<String> matchResults = results
                 .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-        if (!matches.isEmpty()) {
+        if (!matchResults.isEmpty()) {
             if(mOnVoiceInputListener != null){
-                mOnVoiceInputListener.onVoiceInputDone(matches.get(0));
+                mOnVoiceInputListener.onVoiceMatchResults(matchResults);
             }
         }
         if(mAnimatorSet.isRunning()){
             mAnimatorSet.cancel();
+            mCurrentRadius = mMinRadius;
+
         }
     }
 
@@ -228,7 +268,7 @@ public class VoiceInputView extends View implements RecognitionListener {
     @Override
     public void onBeginningOfSpeech() {
         // TODO Auto-generated method stub
-
+        repeatAnimation();
     }
 
     @Override
@@ -248,6 +288,7 @@ public class VoiceInputView extends View implements RecognitionListener {
         // TODO Auto-generated method stub
         if(mAnimatorSet.isRunning()){
             mAnimatorSet.cancel();
+            mAnimatorSet.end();
         }
     }
 

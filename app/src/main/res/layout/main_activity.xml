@@ -4,25 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="30dp"
-    android:background="#ffff9771"
-    android:backgroundTint="#ffff712f"
+    android:padding="10dp"
+    android:background="#F5F5C8"
     android:gravity="center">
-    <TextView
-        android:id="@+id/textview"
+
+    <TextSwitcher
+        android:paddingTop="10dp"
+        android:id="@+id/textSwitcher"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text= "Scanning..."
-        android:textColor="@android:color/black"
-        android:textSize="35sp" />
+        android:layout_gravity="center_horizontal"/>
 
     <app.com.timbuktu.VoiceInputView
         android:id="@+id/voiceview"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:background="#FFF"
         />
+
 
 
 </LinearLayout>
