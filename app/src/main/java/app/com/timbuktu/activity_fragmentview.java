@@ -3,6 +3,7 @@ package app.com.timbuktu;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.os.Build;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.util.FloatMath;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
@@ -79,6 +81,8 @@ public class activity_fragmentview extends FragmentActivity implements Animation
 
         setContentView(R.layout.activity_fragmentview);
 
+
+
         //final View controlsView = findViewById(R.id.fullscreen_content_controls);
         //final View contentView = findViewById(R.id.fullscreen_content);
 
@@ -95,6 +99,8 @@ public class activity_fragmentview extends FragmentActivity implements Animation
                 R.id.mapFragment);
         mSystemUiHider = SystemUiHider.getInstance(this, fragment.getView(), HIDER_FLAGS);
         mSystemUiHider.setup();
+
+
 
         mSystemUiHider
                 .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {

@@ -13,13 +13,18 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.BounceInterpolator;
+import android.view.animation.TranslateAnimation;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
@@ -67,7 +72,8 @@ public class main_activity extends Activity implements Animation.AnimationListen
     // Animation
     private Animation mAnimZoomIn;
 
-    private VoiceInputView mVoiceInputView;
+    //private VoiceInputView mVoiceInputView;
+
 
     @SuppressWarnings("unused")
     private static final float MIN_ZOOM = 1f,MAX_ZOOM = 1f;
@@ -87,19 +93,29 @@ public class main_activity extends Activity implements Animation.AnimationListen
     PointF mid = new PointF();
     float oldDist = 1f;
 
-    static private ArrayList<String> mMatchResults  = new ArrayList<>(0);
-    static private TextSwitcher mSwitcher;
-    static int mTimeOutTextVals = 200;
-    static private int mIndex = 0;
+     private ArrayList<String> mMatchResults  = new ArrayList<>(0);
+     private TextSwitcher mSwitcher;
+     int mTimeOutTextVals = 200;
+     private int mIndex = 0;
 
-    private static final int SHOW_ANIM_TEXT = 1003;
+    private final int SHOW_ANIM_TEXT = 1001;
+    private final int SHOW_POST_ANIM_UI = 1002;
+    private final int SHOW_TEXT = 1003;
+    FloatingActionButton fabButton;
 
-    private static Handler mTextSwictherHandler = new Handler() {
+
+    private Handler mTextSwictherHandler = new Handler() {
         public void handleMessage (Message msg) {
             switch (msg.what) {
                 case SHOW_ANIM_TEXT:
                     //success handling
                     updateTextSwitcherText();
+                    break;
+                case SHOW_TEXT:
+                    updateFinalTextSwitcherText();
+                    break;
+                case SHOW_POST_ANIM_UI:
+                    //mVoiceInputView.onUpdateUIPostSpeech();
                     break;
                 default:
                     //failure handling
@@ -109,18 +125,44 @@ public class main_activity extends Activity implements Animation.AnimationListen
     };
 
     // method to Update the TextSwitcher Text
-    static private void updateTextSwitcherText() {
+    private void updateFinalTextSwitcherText() {
+        mSwitcher.setText(mMatchResults.get(0) + "...");
+
+    }
+
+        // method to Update the TextSwitcher Text
+     private void updateTextSwitcherText() {
 
         if (mIndex + 1 < mMatchResults.size()) {
             mSwitcher.setText(mMatchResults.get(mIndex++));
             Message mesg = new Message();
             mesg.what = SHOW_ANIM_TEXT;
             mTextSwictherHandler.sendMessageDelayed(mesg, mTimeOutTextVals);
-        } else {
+        } else if (mMatchResults.size() > 0) {
             mIndex = 0;
             mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
             mSwitcher.setText(mMatchResults.get(0) + "...");
+            bounce();
+            //mVoiceInputView.onUpdateUIPostSpeech();
         }
+    }
+
+    private void bounce() {
+        mSwitcher.clearAnimation();
+        TranslateAnimation translation;
+        translation = new TranslateAnimation(0f, 0F, 0f, getDisplayHeight() - 200);
+        translation.setStartOffset(500);
+        translation.setDuration(2000);
+        translation.setFillAfter(false);
+        translation.setInterpolator(new BounceInterpolator());
+        mSwitcher.startAnimation(translation);
+
+    }
+
+    private int getDisplayHeight() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        return metrics.widthPixels;
     }
 
     public void setupTextSwitcher() {
@@ -158,13 +200,28 @@ public class main_activity extends Activity implements Animation.AnimationListen
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main_activity);
+
+        /*fabButton  = new FloatingActionButton.Builder(this)
+                .withDrawable(getResources().getDrawable(R.drawable.voice))
+                .withButtonSize(100)
+                .withButtonColor(Color.WHITE)
+                .withGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL)
+                .withMargins(0, 0, 16, 16)
+                .create();*/
+
+        Circle circle = (Circle) findViewById(R.id.circle);
+
+        CircleAngleAnimation animation = new CircleAngleAnimation(circle, 360);
+        animation.setDuration(3000);
+        circle.startAnimation(animation);
+
         createCursorLoader();
         setupTextSwitcher();
 
         mSystemUiHider = SystemUiHider.getInstance(this, mSwitcher, HIDER_FLAGS);
         mSystemUiHider.setup();
-        mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
-        mVoiceInputView.setOnVoiceInputListener(this);
+        //mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
+        //mVoiceInputView.setOnVoiceInputListener(this);
     }
 
     @Override
@@ -186,11 +243,6 @@ public class main_activity extends Activity implements Animation.AnimationListen
     @Override
     public void onResume() {
         super.onResume();
-        if (mMatchResults.size() > 0) {
-            Message msg = new Message();
-            msg.what = SHOW_ANIM_TEXT;
-            //mTextSwictherHandler.sendMessageDelayed(msg, mTimeOutTextVals);
-        }
     }
 
     @Override
@@ -319,7 +371,20 @@ public class main_activity extends Activity implements Animation.AnimationListen
     }
 
     @Override
-    public void onVoiceStatus(String text) {
-
+    public void onVoiceStatus(int code, String text) {
+        switch (code) {
+            case 0: // Error
+            case 1: // Ready for speech
+                mMatchResults.clear();
+                mMatchResults.add(text);
+                Message msg = new Message();
+                msg.what = SHOW_TEXT;
+                mTextSwictherHandler.removeMessages(SHOW_TEXT, 1000);
+                mTextSwictherHandler.sendMessageDelayed(msg, 0);
+                break;
+            default:
+                break;
+        }
     }
+
 }

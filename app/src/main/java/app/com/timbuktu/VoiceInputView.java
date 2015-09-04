@@ -1,6 +1,7 @@
 package app.com.timbuktu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
@@ -12,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -21,26 +23,27 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.TextSwitcher;
-import android.widget.TextView;
-import android.widget.ViewSwitcher;
 
 public class VoiceInputView extends View implements RecognitionListener {
 
     private static final String TAG = VoiceInputView.class.getName();
 
+    private static final int STATE_NONE = -1;
     private static final int STATE_NORMAL = 0;
     private static final int STATE_PRESSED = 1;
+    private static final int STATE_POST_ANIM = 2;
+
 
     private Bitmap mNormalBitmap;
     private Bitmap mPressedBitmap;
     private Paint mPaint;
+    private Paint mDrawablePaint;
+
     private AnimatorSet mAnimatorSet = new AnimatorSet();
     private OnVoiceInputListener mOnVoiceInputListener;
 
@@ -54,9 +57,23 @@ public class VoiceInputView extends View implements RecognitionListener {
     private SpeechRecognizer mSpeech = null;
     private Intent mRecognizerIntent;
 
+    private final int ANIMATE_RADIUS = 1001;
+    private final int ANIMATE_POST = 1002;
 
+    private final int mTimeOutTextVals = 1000;
 
+    private float mStartX, mStartY, mStopX, mStopY = 0;
 
+    private Handler mHandler = new android.os.Handler();
+
+    private Runnable mAnimateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            animateRadius(300);
+            //if (mState == STATE_PRESSED)
+                repeatAnimation();
+        }
+    };
 
     public VoiceInputView(Context context) {
         super(context);
@@ -72,50 +89,30 @@ public class VoiceInputView extends View implements RecognitionListener {
         mNormalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.voice);
         mPressedBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.voice_pressed);
 
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.argb(255, 190, 220, 230));
+        setWillNotDraw(false);
+        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mPaint.setColor(Color.WHITE);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setShadowLayer(10.0f, 0.0f, 3.5f, Color.argb(100, 0, 0, 0));
+        mDrawablePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
 
         int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 40, getContext().getResources().getDisplayMetrics());
         mMinRadius = px / 2;
-        mCurrentRadius = mMinRadius;
-        mAnimatorSet.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animator) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                //mCurrentRadius = mMinRadius;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animator) {
-                //mCurrentRadius = mMinRadius;
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animator) {
-
-            }
-        });
-
+        mCurrentRadius = 0;//mMinRadius;
         setupSpeechRecognition();
     }
 
     private void repeatAnimation() {
-        //if (bCancelAnimation) return;
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        animateRadius(100);
-                        repeatAnimation();
-                    }
-                },
-                1200);
+        mHandler.postDelayed(mAnimateRunnable, 300);
     }
+
+    private void stopAnimation() {
+    }
+
     private void setupSpeechRecognition() {
         mSpeech = SpeechRecognizer.createSpeechRecognizer(getContext());
         mSpeech.setRecognitionListener(this);
@@ -143,51 +140,70 @@ public class VoiceInputView extends View implements RecognitionListener {
             if(mAnimatorSet.isRunning()){
                 mAnimatorSet.cancel();
             }
+            mState = STATE_NONE;
         }
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        setClickable(true);
         int width = canvas.getWidth();
         int height = canvas.getHeight();
 
-        //if(mCurrentRadius > mMinRadius){
+        if (mState == STATE_POST_ANIM) {
+            //canvas.drawBitmap(mContentCreateBitmap, width / 2 - mMinRadius - 10, height / 2 - mMinRadius, mPaint);
+            //repeatPostAnim();
+
+            /*Message mesg = new Message();
+            mesg.what = ANIMATE_POST;
+            mAnimateHandler.sendMessageDelayed(mesg, mPostTimeOutTextVals);*/
+            //mState = STATE_NORMAL;
+        }
+
+        if (mCurrentRadius  == 0 ) {
+            mCurrentRadius = (float) (getWidth() / 2.6);
+            mCurrentRadius /= 4;
+        }
+        if (mCurrentRadius > ((float) (getWidth() / 2.6)) * 3 ) {
+            mCurrentRadius = (float) (getWidth() / 2.6);
+            mCurrentRadius /= 4;
+        }
+
+
+        /*if(mCurrentRadius > mMinRadius){
             canvas.drawCircle(width / 2, height / 2, mCurrentRadius, mPaint);
-        //}
+        }*/
+        canvas.drawCircle(getWidth() / 2, getHeight() / 2, mCurrentRadius, mPaint);
+
 
         switch (mState){
             case STATE_NORMAL:
-                canvas.drawBitmap(mNormalBitmap, width / 2 - mMinRadius -10,  height / 2 - mMinRadius, mPaint);
+                //canvas.drawCircle(width / 2, height / 2, mCurrentRadius, mPaint);
+                //canvas.drawBitmap(mNormalBitmap, width / 2 - mMinRadius -10,  height / 2 - mMinRadius, mPaint);
+                canvas.drawBitmap(mNormalBitmap, (getWidth() - mNormalBitmap.getWidth()) / 2,
+                        (getHeight() - mNormalBitmap.getHeight()) / 2, mDrawablePaint);
                 break;
             case STATE_PRESSED:
-                canvas.drawBitmap(mPressedBitmap, width / 2 - mMinRadius - 10,  height / 2 - mMinRadius, mPaint);
+                canvas.drawBitmap(mPressedBitmap, (getWidth() - mPressedBitmap.getWidth()) / 2,
+                        (getHeight() - mPressedBitmap.getHeight()) / 2, mDrawablePaint);
                 break;
         }
     }
 
     public void animateRadius(float radius){
         bCancelAnimation = true;
-        if(radius <= mCurrentRadius){
-            return;
-        }
-        if(radius > mMaxRadius){
-            radius = mMaxRadius;
-        }else if(radius < mMinRadius){
-            radius = mMinRadius;
-        }
-        if(radius == mCurrentRadius){
-            return;
-        }
         if(mAnimatorSet.isRunning()){
             mAnimatorSet.cancel();
         }
+       float  r  = getCurrentRadius();
         mAnimatorSet.playSequentially(
-                ObjectAnimator.ofFloat(this, "CurrentRadius", getCurrentRadius(), 2 * getCurrentRadius()).setDuration(300),
-                ObjectAnimator.ofFloat(this, "CurrentRadius", 2*getCurrentRadius(), 3 * getCurrentRadius()).setDuration(300),
-                ObjectAnimator.ofFloat(this, "CurrentRadius", 3 * getCurrentRadius() , getCurrentRadius()).setDuration(600)
+                ObjectAnimator.ofFloat(this, "CurrentRadius", getCurrentRadius(), radius).setDuration(300),
+               // ObjectAnimator.ofFloat(this, "CurrentRadius", 2 * getCurrentRadius(), 3 * getCurrentRadius()).setDuration(300),
+               // ObjectAnimator.ofFloat(this, "CurrentRadius", 3 * getCurrentRadius(), 2 * getCurrentRadius()).setDuration(300),
+                ObjectAnimator.ofFloat(this, "CurrentRadius", radius, getCurrentRadius()).setDuration(300)
+
         );
         mAnimatorSet.start();
     }
@@ -206,21 +222,21 @@ public class VoiceInputView extends View implements RecognitionListener {
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
                 Log.d(TAG, "ACTION_DOWN");
-                invalidate();
                 mState = STATE_PRESSED;
                 mSpeech.startListening(mRecognizerIntent);
                 mOnVoiceInputListener.onVoiceInputStart();
+                invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
                 Log.d(TAG, "ACTION_UP");
-                if(mIsRecording){
+                /*if(mIsRecording){
                     mState = STATE_NORMAL;
                     mSpeech.stopListening();
                 }
                 if(mAnimatorSet.isRunning()){
-                    mAnimatorSet.cancel();
+                   mAnimatorSet.cancel();
                 }
-                mIsRecording = !mIsRecording;
+                mIsRecording = !mIsRecording;*/
                 invalidate();
                 return true;
             default:
@@ -232,11 +248,20 @@ public class VoiceInputView extends View implements RecognitionListener {
         mOnVoiceInputListener = OnVoiceInputListener;
     }
 
+    public void onUpdateUIPostSpeech() {
+        if(mAnimatorSet.isRunning()){
+            mAnimatorSet.cancel();
+        }
+        mState = STATE_POST_ANIM;
+        //mAnimateHandler.removeMessages(ANIMATE_RADIUS);
+        invalidate();
+    }
+
     public static interface OnVoiceInputListener{
         public void onVoiceInputStart();
         public void onVoiceInputDone(String text);
         public void onVoiceMatchResults( ArrayList<String> matchResults);
-        public void onVoiceStatus(String text);
+        public void onVoiceStatus(int code, String text);
 
     }
 
@@ -254,21 +279,25 @@ public class VoiceInputView extends View implements RecognitionListener {
         }
         if(mAnimatorSet.isRunning()){
             mAnimatorSet.cancel();
-            mCurrentRadius = mMinRadius;
-
+            mCurrentRadius /= 4;
         }
     }
 
     @Override
     public void onReadyForSpeech(Bundle params) {
+        mOnVoiceInputListener.onVoiceStatus(1, "");
         // TODO Auto-generated method stub
+        repeatAnimation();
 
+        /*Message mesg = new Message();
+        mesg.what = ANIMATE_RADIUS;
+        mAnimateHandler.sendMessageDelayed(mesg, mTimeOutTextVals);*/
     }
 
     @Override
     public void onBeginningOfSpeech() {
         // TODO Auto-generated method stub
-        repeatAnimation();
+        mOnVoiceInputListener.onVoiceStatus(1, "");
     }
 
     @Override
@@ -290,15 +319,26 @@ public class VoiceInputView extends View implements RecognitionListener {
             mAnimatorSet.cancel();
             mAnimatorSet.end();
         }
+        done();
     }
 
     @Override
     public void onError(int error) {
         // TODO Auto-generated method stub
+
         if(mAnimatorSet.isRunning()){
             mAnimatorSet.cancel();
+            mAnimatorSet.end();
         }
+        if(mOnVoiceInputListener != null){
+            mState = STATE_NORMAL;
+            int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    40, getContext().getResources().getDisplayMetrics());
+            mCurrentRadius /= 4;
+            mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
 
+        }
+        done();
     }
 
     @Override
@@ -311,5 +351,16 @@ public class VoiceInputView extends View implements RecognitionListener {
     public void onEvent(int eventType, Bundle params) {
         // TODO Auto-generated method stub
 
+    }
+
+    private void done() {
+        if(mIsRecording || true){
+            mState = STATE_NORMAL;
+            mSpeech.stopListening();
+        }
+        if(mAnimatorSet.isRunning()){
+            mAnimatorSet.cancel();
+        }
+        mIsRecording = !mIsRecording;
     }
 }
