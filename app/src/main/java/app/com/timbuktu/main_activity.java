@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.util.SystemUiHider;
 
-public class main_activity extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, VoiceInputView.OnVoiceInputListener {
+public class main_activity extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, Circle.OnVoiceInputListener {
     private static final String TAG = "main_activity";
 
     /**
@@ -150,7 +150,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
     private void bounce() {
         mSwitcher.clearAnimation();
         TranslateAnimation translation;
-        translation = new TranslateAnimation(0f, 0F, 0f, getDisplayHeight() - 200);
+        translation = new TranslateAnimation(0f, 0F, 0f, getDisplayHeight());
         translation.setStartOffset(500);
         translation.setDuration(2000);
         translation.setFillAfter(false);
@@ -210,7 +210,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
                 .create();*/
 
         Circle circle = (Circle) findViewById(R.id.circle);
-
+        circle.setOnVoiceInputListener(this);
         CircleAngleAnimation animation = new CircleAngleAnimation(circle, 360);
         animation.setDuration(3000);
         circle.startAnimation(animation);
