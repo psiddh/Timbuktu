@@ -45,7 +45,7 @@ public class TimbuktuService extends Service implements Loader.OnLoadCompleteLis
         Log.d(TAG, "DBG: In on onLoadComplete");
 
         if (startWhat == 1) {
-            new SyncMediaDetails(this, data).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, null);
+            //new SyncMediaDetails(this, data).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, null);
             Log.d(TAG, "DBG: Start SyncMediaDetails");
         }
     }
