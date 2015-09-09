@@ -241,12 +241,12 @@ public class Circle extends View implements RecognitionListener {
 
     @Override
     public void onReadyForSpeech(Bundle bundle) {
-        mOnVoiceInputListener.onVoiceStatus(1, "");
+        mOnVoiceInputListener.onVoiceStatus(1, "Listening");
     }
 
     @Override
     public void onBeginningOfSpeech() {
-        mOnVoiceInputListener.onVoiceStatus(1, "");
+        //mOnVoiceInputListener.onVoiceStatus(1, "");
     }
 
     @Override
