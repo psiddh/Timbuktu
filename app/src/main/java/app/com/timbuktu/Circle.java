@@ -18,7 +18,6 @@ public class Circle extends View {
     private static final int START_ANGLE_POINT = 120;
 
     private final RectF rect;
-
     private float angle;
 
     private final Paint paint1;
@@ -37,10 +36,17 @@ public class Circle extends View {
     private static int mHeight;
     private static int mSize = 300;
 
-    private boolean mShouldAnimate = true;
+    private static int mBmpPosX;
+    private static int mBmpPosY;
+
     private final Bitmap mNormalBitmap;
-    FloatingActionButton fabButton;
     private Handler mHandler = new android.os.Handler();
+
+    private final int STATE_NONE = 0;
+    private final int STATE_ANIMATE = 0;
+    private final int STATE_INANIMATE = 0;
+
+    private int mState = STATE_NONE;
 
     private Runnable mAnimate = new Runnable() {
         @Override
@@ -53,14 +59,14 @@ public class Circle extends View {
     };
 
     private void repeatAnimation() {
-        if (mShouldAnimate) {
+        if (mState == STATE_ANIMATE) {
             mHandler.removeCallbacksAndMessages(mAnimate);
             mHandler.postDelayed(mAnimate, 1000);
         }
     }
 
     private void stopAnimation() {
-        mShouldAnimate = false;
+        mState = STATE_NONE;
         mHandler.removeCallbacksAndMessages(mAnimate);
     }
 
@@ -71,7 +77,7 @@ public class Circle extends View {
         //Initial Angle (optional, it can be zero)
         angle = 0;
         final int mainCircleStrokeWidth = 30;
-        final int secondCircleWidth = 40;
+        final int secondCircleWidth = 30;
         rect = new RectF(rect_left, rect_top, rect_right, rect_bottom);
 
 
@@ -116,7 +122,6 @@ public class Circle extends View {
         mButtonPaint.setShadowLayer(10.0f, 0.0f, 3.5f, Color.argb(100, 0, 0, 0));
 
         mNormalBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.voice);
-
     }
 
     @Override
@@ -130,52 +135,29 @@ public class Circle extends View {
         rect.top = rect_top = mHeight;
         rect.bottom = rect_bottom = rect_top + mSize;
 
+        mBmpPosX = rect_left + ((rect_right - rect_left) / 2 )- mNormalBitmap.getWidth() / 2;
+        mBmpPosY = rect_top + ((rect_bottom - rect_top) / 2 ) - mNormalBitmap.getHeight() / 2;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int x = getWidth();
-        int y = getHeight();
-
+        // draw circle with different paints
         canvas.drawArc(rect, START_ANGLE_POINT, 40, false, paint1);
         canvas.drawArc(rect, 160, 50, false, paint2);
         canvas.drawArc(rect, 210, 90, false, paint3);
         canvas.drawArc(rect, 300, 120, false, paint4);
 
-        canvas.drawArc(rect, angle, START_ANGLE_POINT, false, paint5);
+        // draw Microphone button
         canvas.drawOval(rect.left, rect.top, rect.right, rect.bottom, mButtonPaint);
+        canvas.drawBitmap(mNormalBitmap, mBmpPosX, mBmpPosY, mButtonPaint);
 
-        int bmpX = rect_left + ((rect_right - rect_left) / 2 )- mNormalBitmap.getWidth() / 2;
-        int bmpY = rect_top + ((rect_bottom - rect_top) / 2 ) - mNormalBitmap.getHeight() / 2;
-
-        canvas.drawBitmap(mNormalBitmap, bmpX, bmpY, mButtonPaint);
-
-
-        repeatAnimation();
-
-
-        //canvas.drawBitmap(mNormalBitmap, (getWidth() - mNormalBitmap.getWidth()) / 2,
-        //        (getHeight() - mNormalBitmap.getHeight()) / 2, paint5);
-
-        /*if (angle >= 120 && angle <= 160) {
-            canvas.drawArc(rect, START_ANGLE_POINT, (angle - START_ANGLE_POINT), false, paint1);
-        } else if (angle > 160 && angle <= 210) {
-            canvas.drawArc(rect, START_ANGLE_POINT, 40, false, paint1);
-            canvas.drawArc(rect, 160, (angle - 160), false, paint2);
-        } else if (angle > 210 && angle <= 300) {
-            canvas.drawArc(rect, START_ANGLE_POINT, 40, false, paint1);
-            canvas.drawArc(rect, 160, 50, false, paint2);
-            canvas.drawArc(rect, 210, (angle - 210), false, paint3);
-        } else if (angle > 310 && angle <= 360) {
-            canvas.drawArc(rect, START_ANGLE_POINT, 40, false, paint1);
-            canvas.drawArc(rect, 160, 50, false, paint2);
-            canvas.drawArc(rect, 210, 300, false, paint3);
-            canvas.drawArc(rect, 310, (angle - 360), false, paint3);
-
-        }*/
-
+        // draw animated arc
+        if (mState == STATE_ANIMATE) {
+            canvas.drawArc(rect, angle, START_ANGLE_POINT, false, paint5);
+            repeatAnimation();
+        }
     }
 
     public float getAngle() {
