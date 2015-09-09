@@ -1,5 +1,6 @@
 package app.com.timbuktu;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 
 public class Circle extends View {
@@ -26,8 +28,18 @@ public class Circle extends View {
     private final Paint paint5;
     private final Paint mButtonPaint;
 
+    private static int rect_left;
+    private static int rect_top;
+    private static int rect_right;
+    private static int rect_bottom;
+
+    private static int mWidth;
+    private static int mHeight;
+    private static int mSize = 300;
+
     private boolean mShouldAnimate = true;
     private final Bitmap mNormalBitmap;
+    FloatingActionButton fabButton;
     private Handler mHandler = new android.os.Handler();
 
     private Runnable mAnimate = new Runnable() {
@@ -43,7 +55,7 @@ public class Circle extends View {
     private void repeatAnimation() {
         if (mShouldAnimate) {
             mHandler.removeCallbacksAndMessages(mAnimate);
-            mHandler.postDelayed(mAnimate, 3000);
+            mHandler.postDelayed(mAnimate, 1000);
         }
     }
 
@@ -58,10 +70,9 @@ public class Circle extends View {
 
         //Initial Angle (optional, it can be zero)
         angle = 0;
-        final int mainCircleStrokeWidth = 15;
+        final int mainCircleStrokeWidth = 30;
         final int secondCircleWidth = 40;
-        //size 200x200 example
-        rect = new RectF(200, 200, 500, 500);
+        rect = new RectF(rect_left, rect_top, rect_right, rect_bottom);
 
 
         paint1 = new Paint();
@@ -109,17 +120,42 @@ public class Circle extends View {
     }
 
     @Override
+    protected void onSizeChanged (int w, int h, int oldw, int oldh) {
+        mWidth = w/2 - mSize/2;
+        mHeight = h/2 - mSize/2;
+
+        rect.left = rect_left = mWidth;
+        rect.right = rect_right = rect_left + mSize;
+
+        rect.top = rect_top = mHeight;
+        rect.bottom = rect_bottom = rect_top + mSize;
+
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        int x = getWidth();
+        int y = getHeight();
 
         canvas.drawArc(rect, START_ANGLE_POINT, 40, false, paint1);
         canvas.drawArc(rect, 160, 50, false, paint2);
         canvas.drawArc(rect, 210, 90, false, paint3);
         canvas.drawArc(rect, 300, 120, false, paint4);
-        canvas.drawBitmap(mNormalBitmap, rect.centerX(), rect.top, mButtonPaint);
 
-        canvas.drawArc(rect, angle , START_ANGLE_POINT, false, paint5);
+        canvas.drawArc(rect, angle, START_ANGLE_POINT, false, paint5);
+        canvas.drawOval(rect.left, rect.top, rect.right, rect.bottom, mButtonPaint);
+
+        int bmpX = rect_left + ((rect_right - rect_left) / 2 )- mNormalBitmap.getWidth() / 2;
+        int bmpY = rect_top + ((rect_bottom - rect_top) / 2 ) - mNormalBitmap.getHeight() / 2;
+
+        canvas.drawBitmap(mNormalBitmap, bmpX, bmpY, mButtonPaint);
+
+
         repeatAnimation();
+
+
         //canvas.drawBitmap(mNormalBitmap, (getWidth() - mNormalBitmap.getWidth()) / 2,
         //        (getHeight() - mNormalBitmap.getHeight()) / 2, paint5);
 
