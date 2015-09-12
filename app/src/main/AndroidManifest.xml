@@ -26,6 +26,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:label="Timbuktu"
+            android:name=".collections_activity" >
+        </activity>
+
 
     <meta-data android:name="com.google.android.maps.v2.API_KEY"
             android:value="AIzaSyDcGmi8G1hTU5Pf8bHd8xWVfxmd5j3932w" />

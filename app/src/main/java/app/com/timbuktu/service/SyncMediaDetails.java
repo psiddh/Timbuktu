@@ -54,7 +54,7 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
         mContext = context;
         mCursor = cursor;
         mGeocoder = new Geocoder(mContext, Locale.getDefault());
-        mSyncCache = new SyncCache();
+        mSyncCache = SyncCache.getInstance();
         setupCursor(mCursor);
         setupDialog();
     }

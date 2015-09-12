@@ -2,6 +2,7 @@ package app.com.timbuktu;
 
 import android.app.Activity;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -31,6 +32,7 @@ import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
 
+import app.com.timbuktu.layout.CollectionLayout;
 import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.util.SystemUiHider;
 
@@ -101,6 +103,8 @@ public class main_activity extends Activity implements Animation.AnimationListen
     private final int SHOW_ANIM_TEXT = 1001;
     private final int SHOW_POST_ANIM_UI = 1002;
     private final int SHOW_TEXT = 1003;
+    private final int SHOW_NEXT_ACTIVITY = 1004;
+
     FloatingActionButton fabButton;
 
 
@@ -116,6 +120,10 @@ public class main_activity extends Activity implements Animation.AnimationListen
                     break;
                 case SHOW_POST_ANIM_UI:
                     //mVoiceInputView.onUpdateUIPostSpeech();
+                    break;
+                case SHOW_NEXT_ACTIVITY:
+                    Intent intent = new Intent(getApplicationContext(), collections_activity.class);
+                    startActivity(intent);
                     break;
                 default:
                     //failure handling
@@ -143,6 +151,9 @@ public class main_activity extends Activity implements Animation.AnimationListen
             mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
             mSwitcher.setText(mMatchResults.get(0) + "...");
             bounce();
+            Message mesg = new Message();
+            mesg.what = SHOW_NEXT_ACTIVITY;
+            mTextSwictherHandler.sendMessageDelayed(mesg, 2500);
             //mVoiceInputView.onUpdateUIPostSpeech();
         }
     }

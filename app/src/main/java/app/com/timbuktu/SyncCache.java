@@ -8,13 +8,26 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SyncCache {
 
-    private ConcurrentHashMap<Integer, MediaItem> mMap;
+    private static ConcurrentHashMap<Integer, MediaItem> mMap;
 
-    public SyncCache() {
-        mMap = new ConcurrentHashMap<>();
+    private static SyncCache sInstance = null;
+    public static SyncCache getInstance() {
+        if (sInstance == null) {
+            mMap = new ConcurrentHashMap<>();
+            sInstance = new SyncCache();
+        }
+        return sInstance;
+    }
+
+    private SyncCache() {
     }
 
     public void addMediaItem(int id, MediaItem item) {
         mMap.put(id, item);
     }
+
+    public MediaItem getMediaItem(int id) {
+        return mMap.get(id);
+    }
+
 }
