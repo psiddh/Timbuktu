@@ -19,20 +19,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Method is called during creation of the database
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(DatabaseContract.GalleryTable.CREATE_TABLE);
+        db.execSQL(DatabaseContract.MediaTable.CREATE_TABLE);
     }
 
     // Method is called during an upgrade of the database
     @Override
     public void onUpgrade(final SQLiteDatabase db, int oldVersion, final int newVersion) {
         Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
-        db.execSQL("ALTER TABLE " + DatabaseContract.GalleryTable.DELETE_TABLE + " RENAME TO DROP_" + DatabaseContract.GalleryTable.DELETE_TABLE);
+        db.execSQL("ALTER TABLE " + DatabaseContract.MediaTable.DELETE_TABLE + " RENAME TO DROP_" + DatabaseContract.MediaTable.DELETE_TABLE);
 
         // TBD: Need to figure Update strategy later!
         Thread dropThread = new Thread() {
             @Override
             public void run() {
-                db.execSQL(DatabaseContract.GalleryTable.DELETE_TABLE);
+                db.execSQL(DatabaseContract.MediaTable.DELETE_TABLE);
                 Log.i(TAG, "Done removing existing data");
                 db.needUpgrade(newVersion);
                 // TBD: For now!

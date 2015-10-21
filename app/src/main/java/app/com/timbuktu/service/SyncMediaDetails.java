@@ -12,11 +12,15 @@ import android.util.Log;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import app.com.timbuktu.DataBaseManager;
 import app.com.timbuktu.MediaItem;
 import app.com.timbuktu.SyncCache;
+import app.com.timbuktu.database.DBInterface;
+import app.com.timbuktu.database.DatabaseManager;
 
 
 public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
@@ -46,7 +50,7 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
     private Geocoder mGeocoder;
     private SyncCache mSyncCache;
     private ProgressDialog mDialog;
-
+    private DBInterface mDBInterface;
 
     private static final String TAG = "SyncMediaDetails";
 
@@ -55,6 +59,7 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
         mCursor = cursor;
         mGeocoder = new Geocoder(mContext, Locale.getDefault());
         mSyncCache = SyncCache.getInstance();
+        mDBInterface = new DBInterface(context);
         setupCursor(mCursor);
         setupDialog();
     }
@@ -158,10 +163,11 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
         String currentDate = null;
         String path = null;
         boolean isVideo = false;
-        double lat = 0.0;
-        double lng = 0.0;
-        List<Address> addresses = null;
+        double lat = -1;
+        double lng = -1;
+        List<Address> addresses = new ArrayList<>();
 
+        mDBInterface.open(true);
         do {
             if (isCursorPosAtTypeVideo(cur)) {
                 if (mVideoDateColumn != -1) {
@@ -182,18 +188,37 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
                     path = cur.getString(mPictureDataColumn);
                 }
             }
-            addresses = getAddress(lat, lng);
+
+            boolean bNeedUpdate = false;
+            try {
+                bNeedUpdate = mDBInterface.doesPlacesNeedUpdate(id);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (bNeedUpdate) {
+                addresses = getAddress(lat, lng);
+            }
 
             MediaItem item = new MediaItem(id, path, timestamp, lat, lng, addresses, isVideo);
+            // Update the DB if not present already. This API will take care of it.
+            try {
+                mDBInterface.addMediaItem(id, item);
+            } catch (IOException e) {
+                //mDBInterface.open(true);
+                //continue;
+            }
+            // Update the cache
             mSyncCache.addMediaItem(id, item);
             publishProgress(item);
             cur.moveToNext();
 
         } while (!cur.isClosed() && !cur.isLast() && !cur.isAfterLast());
+
+        mDBInterface.close();
     }
 
     public List<Address> getAddress(double lat, double lng) {
-        List<Address> addresses = null;
+        List<Address> addresses = new ArrayList<>();
         try {
             addresses = mGeocoder.getFromLocation(lat, lng, 1);
             if (addresses.size() <= 0) {

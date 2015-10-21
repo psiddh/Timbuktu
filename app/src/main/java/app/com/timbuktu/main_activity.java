@@ -16,6 +16,7 @@ import android.os.Message;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Pair;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,6 +32,9 @@ import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
 
 import app.com.timbuktu.layout.CollectionLayout;
 import app.com.timbuktu.service.SyncMediaDetails;
@@ -106,7 +110,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
     private final int SHOW_NEXT_ACTIVITY = 1004;
 
     FloatingActionButton fabButton;
-
+    private UserFilterAnalyzer mAnalyzer;
 
     private Handler mTextSwictherHandler = new Handler() {
         public void handleMessage (Message msg) {
@@ -134,7 +138,21 @@ public class main_activity extends Activity implements Animation.AnimationListen
 
     // method to Update the TextSwitcher Text
     private void updateFinalTextSwitcherText() {
-        mSwitcher.setText(mMatchResults.get(0) + "...");
+        String result = mMatchResults.get(0);
+        mAnalyzer = new UserFilterAnalyzer(this, result);
+        Pair<Long,Long> pairRange = mAnalyzer.getDateRange(result);
+        int matchState = mAnalyzer.getMatchState();
+        ArrayList<String> places = SyncCache.getInstance().getMatchingPlacesFromUserFilter(result);
+
+        mSwitcher.setText(result + "...");
+
+        if (pairRange != null)
+            Log.d(TAG, "DBG: DATE RANGE - " + pairRange.first + " to " + pairRange.second);
+        Log.d(TAG, "DBG: PLACES FOUND - " + places.size());
+        for (String s : places) {
+            Log.d(TAG, "DBG: " + s);
+        }
+        Log.d(TAG, "DBG: MATCH STATE - " + matchState);
 
     }
 

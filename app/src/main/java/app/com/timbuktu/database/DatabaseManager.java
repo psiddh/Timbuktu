@@ -24,7 +24,7 @@ public class DatabaseManager {
     }
 
     public synchronized SQLiteDatabase open(boolean bWritable) {
-        if(mRefCount.incrementAndGet() == 1) {
+        if (mRefCount.incrementAndGet() == 1) {
             // open new d/b connection
             mDatabase = bWritable ? mDbHelper.getWritableDatabase() : mDbHelper.getReadableDatabase();
         }
@@ -34,7 +34,7 @@ public class DatabaseManager {
 
 
     public synchronized void close() {
-        if(mRefCount.decrementAndGet() == 0) {
+        if (mRefCount.decrementAndGet() == 0) {
             // Indeed close the d/b
             mDatabase.close();
         }
