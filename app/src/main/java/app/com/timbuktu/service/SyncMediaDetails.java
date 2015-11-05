@@ -167,6 +167,8 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
         double lng = -1;
         List<Address> addresses = new ArrayList<>();
 
+        ArrayList<String> places = new ArrayList<>();
+
         mDBInterface.open(true);
         do {
             if (isCursorPosAtTypeVideo(cur)) {
@@ -189,17 +191,17 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
                 }
             }
 
-            boolean bNeedUpdate = false;
+
             try {
-                bNeedUpdate = mDBInterface.doesPlacesNeedUpdate(id);
+                places = mDBInterface.getPlacesById(id);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (bNeedUpdate) {
-                addresses = getAddress(lat, lng);
+            if (places.size() == 0) {
+                places = getAddress(lat, lng);
             }
 
-            MediaItem item = new MediaItem(id, path, timestamp, lat, lng, addresses, isVideo);
+            MediaItem item = new MediaItem(id, path, timestamp, lat, lng, places, isVideo);
             // Update the DB if not present already. This API will take care of it.
             try {
                 mDBInterface.addMediaItem(id, item);
@@ -217,19 +219,22 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
         mDBInterface.close();
     }
 
-    public List<Address> getAddress(double lat, double lng) {
-        List<Address> addresses = new ArrayList<>();
+    public ArrayList<String> getAddress(double lat, double lng) {
+        ArrayList<String> places = new ArrayList<>();
         try {
-            addresses = mGeocoder.getFromLocation(lat, lng, 1);
+            List<Address> addresses = mGeocoder.getFromLocation(lat, lng, 1);
             if (addresses.size() <= 0) {
-                return addresses;
+                return places;
             }
+            places.add(addresses.get(0).getLocality()); //city
+            places.add(addresses.get(0).getAdminArea()); //state
+            places.add(addresses.get(0).getCountryName()); //country
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         finally {
-            return addresses;
+            return places;
         }
     }
 

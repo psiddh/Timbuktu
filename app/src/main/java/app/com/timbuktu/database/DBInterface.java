@@ -8,6 +8,7 @@ import android.location.Address;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import app.com.timbuktu.MediaItem;
@@ -39,15 +40,15 @@ public class DBInterface {
         addMediaRow(id, item);
     }
 
-    public boolean doesPlacesNeedUpdate(int id) throws IOException {
+    public ArrayList<String> getPlacesById(int id) throws IOException {
         throwIfNotOpen();
 
-        boolean bNeedUpdate = false;
+        ArrayList<String> places = new ArrayList<>();
         mDatabase.beginTransaction();
         try {
             Cursor cursor = mDatabase.rawQuery(DatabaseContract.MediaTable.SELECT_ALL_BY_MEDIA_ID + id, null);
             if (cursor.getCount() == 0) {
-                bNeedUpdate = true;
+                return places;
             } else {
                 int COLUMN_CITY = cursor.getColumnIndexOrThrow(DatabaseContract.MediaTable.MEDIA_CITY);
                 int COLUMN_STATE = cursor.getColumnIndexOrThrow(DatabaseContract.MediaTable.MEDIA_STATE);
@@ -63,7 +64,11 @@ public class DBInterface {
                 double lng = cursor.getDouble(COLUMN_LNG);
 
                 if (isValidLatLng(lat, lng) && city == "" && state == "" && country == "")
-                    bNeedUpdate = true;
+                    return places;
+
+                places.add(city);
+                places.add(state);
+                places.add(country);
             }
             mDatabase.setTransactionSuccessful();
             cursor.close();
@@ -74,7 +79,7 @@ public class DBInterface {
         finally {
             mDatabase.endTransaction();
             //close();
-            return bNeedUpdate;
+            return places;
         }
     }
 
@@ -87,12 +92,12 @@ public class DBInterface {
         String city = "";
         String state = "";
         String country = "";
-        if (item.getAddress() != null) {
-            List<Address> places = item.getAddress();
+        if (item.getPlaces() != null) {
+            ArrayList<String> places = item.getPlaces();
             if (places.size() != 0) {
-                city = places.get(0).getLocality();
-                state = places.get(0).getAdminArea();
-                country = places.get(0).getCountryName();
+                city = places.get(0);
+                state = places.get(1);
+                country = places.get(2);
             }
         }
         ContentValues values = new ContentValues();

@@ -33,12 +33,13 @@ public class SyncCache {
     public void addMediaItem(int id, MediaItem item) {
         mMap.put(id, item);
 
-        if (item.getAddress().size() == 0 || item.getAddress() == null)
+        ArrayList<String> places = item.getPlaces();
+        if (places.size() == 0 || places == null)
             return;
         //String address = item.getAddress().get(0).getAddressLine(0);
-        String city = item.getAddress().get(0).getLocality();
-        String state = item.getAddress().get(0).getAdminArea();
-        String country = item.getAddress().get(0).getCountryName();
+        String city = places.get(0);
+        String state = places.get(1);
+        String country = places.get(2);
         //String postalCode = item.getAddress().get(0).getPostalCode();
         //String knownName = item.getAddress().get(0).getFeatureName();
 
@@ -52,6 +53,11 @@ public class SyncCache {
     public MediaItem getMediaItem(int id) {
         MediaItem item = mMap.get(id);
         return item;
+    }
+
+
+    public ConcurrentHashMap<Integer, MediaItem> getMap() {
+        return mMap;
     }
 
     // Util function

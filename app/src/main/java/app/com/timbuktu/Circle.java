@@ -267,7 +267,9 @@ public class Circle extends View implements RecognitionListener {
     @Override
     public void onError(int i) {
         stopListening();
-        mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
+        //mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
+        mOnVoiceInputListener.onVoiceStatus(0, "San Francisco");
+
     }
 
     @Override

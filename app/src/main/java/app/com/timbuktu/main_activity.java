@@ -37,8 +37,10 @@ import java.util.HashMap;
 import java.util.Locale;
 
 import app.com.timbuktu.layout.CollectionLayout;
+import app.com.timbuktu.service.CollectionsWorkerTask;
 import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.util.SystemUiHider;
+import criteria.Criteria;
 
 public class main_activity extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, Circle.OnVoiceInputListener {
     private static final String TAG = "main_activity";
@@ -111,6 +113,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
 
     FloatingActionButton fabButton;
     private UserFilterAnalyzer mAnalyzer;
+    private CollectionsWorkerTask mTask;
 
     private Handler mTextSwictherHandler = new Handler() {
         public void handleMessage (Message msg) {
@@ -153,6 +156,12 @@ public class main_activity extends Activity implements Animation.AnimationListen
             Log.d(TAG, "DBG: " + s);
         }
         Log.d(TAG, "DBG: MATCH STATE - " + matchState);
+
+        Criteria criteria = new Criteria();
+        criteria.add(pairRange);
+        criteria.add(places);
+
+        mTask.runWithCriteria(criteria);
 
     }
 
@@ -249,6 +258,10 @@ public class main_activity extends Activity implements Animation.AnimationListen
 
         mSystemUiHider = SystemUiHider.getInstance(this, mSwitcher, HIDER_FLAGS);
         mSystemUiHider.setup();
+
+        mTask = new CollectionsWorkerTask();
+        mTask.start();
+
         //mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
         //mVoiceInputView.setOnVoiceInputListener(this);
     }
@@ -278,6 +291,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
     public void onDestroy() {
         super.onDestroy();
         mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
+        mTask.stop();
     }
 
     /**

@@ -12,17 +12,18 @@ public class MediaItem {
     private long mTimeStamp;
     private double mLat;
     private double mLng;
-    private List<Address> mAddresses;
+    //private List<Address> mAddresses;
+    private ArrayList<String> mPlaces;
     private boolean mIsVideo;
 
-    public MediaItem(int mediaId, String path, long timeStamp, double lat, double lng, List<Address> addresses, boolean isVideo) {
+    public MediaItem(int mediaId, String path, long timeStamp, double lat, double lng, ArrayList<String> places, boolean isVideo) {
         this.mMediaID = mediaId;
         this.mPath = path;
         this.mTimeStamp = timeStamp;
         this.mLat = lat;
         this.mLng = lng;
         this.mIsVideo = isVideo;
-        mAddresses = new ArrayList<Address>(addresses);
+        mPlaces = new ArrayList<>(places);
     }
 
     public int getMediaID() {
@@ -45,8 +46,8 @@ public class MediaItem {
         return mLng;
     }
 
-    public List<Address> getAddress() {
-        return mAddresses;
+    public ArrayList<String> getPlaces() {
+        return mPlaces;
     }
 
     public boolean isVideo() {
