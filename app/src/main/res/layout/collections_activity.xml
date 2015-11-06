@@ -7,9 +7,8 @@
     android:background="#F5F5C8"
     android:gravity="center">
 
-    <app.com.timbuktu.layout.CollectionLayout
-            android:id="@+id/tagLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#ffff00"/>
+    <com.bartoszlipinski.flippablestackview.FlippableStackView
+        android:id="@+id/stack"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </RelativeLayout>

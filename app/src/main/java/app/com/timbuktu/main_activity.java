@@ -163,6 +163,12 @@ public class main_activity extends Activity implements Animation.AnimationListen
 
         mTask.runWithCriteria(criteria);
 
+        //hacker dojo....
+        bounce();
+        Message mesg = new Message();
+        mesg.what = SHOW_NEXT_ACTIVITY;
+        mTextSwictherHandler.sendMessageDelayed(mesg, 2500);
+
     }
 
         // method to Update the TextSwitcher Text
