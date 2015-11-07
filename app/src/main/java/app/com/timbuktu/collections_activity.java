@@ -44,6 +44,7 @@ import java.util.List;
 
 import app.com.timbuktu.fragment.ColorFragment;
 import app.com.timbuktu.layout.CollectionLayout;
+import app.com.timbuktu.service.Collections;
 import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.util.SystemUiHider;
 
@@ -62,6 +63,13 @@ public class collections_activity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.collections_activity);
+
+        Bundle b = getIntent().getExtras();
+        Collections collections =
+                (Collections) b.getParcelable("collections");
+
+        if (collections != null)
+            Log.d(TAG, "collections size : " + collections.size());
 
         createViewPagerFragments();
         mPageAdapter = new ColorFragmentAdapter(getSupportFragmentManager(), mViewPagerFragments);

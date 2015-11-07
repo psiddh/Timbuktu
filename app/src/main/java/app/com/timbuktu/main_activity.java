@@ -36,13 +36,13 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 
-import app.com.timbuktu.layout.CollectionLayout;
+import app.com.timbuktu.service.Collections;
 import app.com.timbuktu.service.CollectionsWorkerTask;
 import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.util.SystemUiHider;
 import criteria.Criteria;
 
-public class main_activity extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, Circle.OnVoiceInputListener {
+public class main_activity extends Activity implements Animation.AnimationListener, Loader.OnLoadCompleteListener<Cursor>, Circle.OnVoiceInputListener, ICollectionResults {
     private static final String TAG = "main_activity";
 
     /**
@@ -129,8 +129,10 @@ public class main_activity extends Activity implements Animation.AnimationListen
                     //mVoiceInputView.onUpdateUIPostSpeech();
                     break;
                 case SHOW_NEXT_ACTIVITY:
-                    Intent intent = new Intent(getApplicationContext(), collections_activity.class);
-                    startActivity(intent);
+                    /*Intent intent = new Intent(getApplicationContext(), collections_activity.class);
+                    Collections collections = mTask.getResults();
+                    intent.putExtra("collections", collections);
+                    startActivity(intent);*/
                     break;
                 default:
                     //failure handling
@@ -165,9 +167,9 @@ public class main_activity extends Activity implements Animation.AnimationListen
 
         //hacker dojo....
         bounce();
-        Message mesg = new Message();
-        mesg.what = SHOW_NEXT_ACTIVITY;
-        mTextSwictherHandler.sendMessageDelayed(mesg, 2500);
+        //Message mesg = new Message();
+        //mesg.what = SHOW_NEXT_ACTIVITY;
+        //mTextSwictherHandler.sendMessageDelayed(mesg, 10000);
 
     }
 
@@ -184,9 +186,9 @@ public class main_activity extends Activity implements Animation.AnimationListen
             mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
             mSwitcher.setText(mMatchResults.get(0) + "...");
             bounce();
-            Message mesg = new Message();
-            mesg.what = SHOW_NEXT_ACTIVITY;
-            mTextSwictherHandler.sendMessageDelayed(mesg, 2500);
+            //Message mesg = new Message();
+            //mesg.what = SHOW_NEXT_ACTIVITY;
+            //mTextSwictherHandler.sendMessageDelayed(mesg, 2500);
             //mVoiceInputView.onUpdateUIPostSpeech();
         }
     }
@@ -265,7 +267,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
         mSystemUiHider = SystemUiHider.getInstance(this, mSwitcher, HIDER_FLAGS);
         mSystemUiHider.setup();
 
-        mTask = new CollectionsWorkerTask();
+        mTask = new CollectionsWorkerTask(this);
         mTask.start();
 
         //mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
@@ -436,4 +438,10 @@ public class main_activity extends Activity implements Animation.AnimationListen
         }
     }
 
+    @Override
+    public void onResults(Collections collections) {
+        Intent intent = new Intent(getApplicationContext(), collections_activity.class);
+        intent.putExtra("collections", collections);
+        startActivity(intent);
+    }
 }

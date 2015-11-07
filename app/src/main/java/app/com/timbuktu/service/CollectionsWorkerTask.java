@@ -1,6 +1,7 @@
 package app.com.timbuktu.service;
 
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.util.Pair;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import app.com.timbuktu.ICollectionResults;
 import app.com.timbuktu.MediaItem;
 import app.com.timbuktu.SyncCache;
 import criteria.Criteria;
@@ -19,7 +21,10 @@ public class CollectionsWorkerTask {
     HandlerThread mHandlerThread = new HandlerThread(TAG);
     private Handler mHandler;
     private Criteria mCriterion;
-    ArrayList<ArrayList<Integer>> mCollectionsIds = new ArrayList<ArrayList<Integer>>();
+    //ArrayList<ArrayList<Integer>> mCollectionsIds = new ArrayList<ArrayList<Integer>>();
+
+    private Collections mCollections;
+    private ICollectionResults mCallback = null;
 
     private SyncCache sIntance = SyncCache.getInstance();
 
@@ -29,9 +34,16 @@ public class CollectionsWorkerTask {
 
     private int mTaskState = TASK_STOPPED;
 
-    public CollectionsWorkerTask() {}
+    public CollectionsWorkerTask(Context context) {
+        mCollections = new Collections();
+        mCallback = (ICollectionResults) context;
+    }
 
     public void start() {
+        if (mCallback == null) {
+            Log.d(TAG, "Callback not set! So return");
+            return;
+        }
         mHandlerThread = new HandlerThread(TAG);
         mHandlerThread.start();
 
@@ -40,6 +52,11 @@ public class CollectionsWorkerTask {
     }
 
     public void runWithCriteria(Criteria criterion) {
+        if (mCallback == null) {
+            Log.d(TAG, "Callback not set! So return");
+            return;
+        }
+
         if (criterion == null || !criterion.isCriteriaSet()) {
             Log.d(TAG, "Ignore this Run request as the criteria seems to be not set or invalid!");
             return;
@@ -87,6 +104,13 @@ public class CollectionsWorkerTask {
             mCriterion.clearAll();
             mTaskState = TASK_STOPPED;
         }
+    }
+
+    public Collections getResults() {
+        if (mTaskState != TASK_COMPLETED)
+            return null;
+
+        return mCollections;
     }
 
     private void assertHandler() throws IllegalStateException {
@@ -143,6 +167,7 @@ public class CollectionsWorkerTask {
             ArrayList<String> placeFound = mCriterion.getPlaces();
             Pair<Long, Long> dateFound = mCriterion.getDateRange();
             boolean found = false;
+            Collection coll = new Collection();
 
             ArrayList<Integer> ids = new ArrayList<>();
             for (Object i : cache.keySet()) {
@@ -169,31 +194,38 @@ public class CollectionsWorkerTask {
                 }
 
                 if (found && isDefaultCriteriaMet(id)) {
-                    ids.add(id);
-                } else if (ids.size() != 0) {
-                    ArrayList<Integer> copy = (ArrayList<Integer>) ids.clone();
-                    mCollectionsIds.add(copy);
-                    ids.clear();
+                    //ids.add(id);
+                    coll.add(id);
+                } else if (coll.size() != 0) {
+                    //ArrayList<Integer> copy = (ArrayList<Integer>) ids.clone();
+                    //mCollectionsIds.add(copy);
+
+                    mCollections.add(coll);
+                    //ids.clear();
+                    coll.reset();
                 } else if (found) {
-                    ArrayList<Integer> copy = (ArrayList<Integer>) ids.clone();
 
-                    mCollectionsIds.add(copy);
-                    ids.clear();
+                    mCollections.add(coll);
+                    coll.reset();
+                    //ids.clear();
 
-                    ids.add(id);
+                    //ids.add(id);
+                    coll.add(id);
+
                 }
             }
 
             mTaskState = TASK_COMPLETED; // Task completed
+            mCallback.onResults(mCollections);
         }
 
         private boolean isDefaultCriteriaMet(Integer id) {
-            if (mCollectionsIds.size() == 0)
+            if (mCollections.size() == 0)
                 return true;
-            ArrayList<Integer> curIds = mCollectionsIds.get(mCollectionsIds.size() - 1);
-            if (curIds.size() == 0)
+            Collection collection = mCollections.at(mCollections.size() - 1);
+            if (collection.size() == 0)
                 return true;
-            Integer lastId = curIds.get(curIds.size() -1);
+            Integer lastId = collection.at(collection.size() - 1);
 
             MediaItem currItem = sIntance.getMediaItem(id);
             MediaItem lastItem = sIntance.getMediaItem(lastId);
