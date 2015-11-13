@@ -16,6 +16,8 @@ package app.com.timbuktu.fragment;
  * limitations under the License.
  */
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
@@ -25,8 +27,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.ByteArrayOutputStream;
 
 import app.com.timbuktu.R;
+import app.com.timbuktu.collage.CollageHelper;
+import app.com.timbuktu.collections.Collection;
 
 
 /**
@@ -35,28 +43,59 @@ import app.com.timbuktu.R;
  */
 public class ColorFragment extends Fragment {
 
-    private static final String EXTRA_COLOR = "com.bartoszlipinski.flippablestackview.fragment.ColorFragment.EXTRA_COLOR";
+    private static final String EXTRA_COLOR = "EXTRA_COLOR";
+    private static final String EXTRA_POS = "EXTRA_POS";
+    private static final String EXTRA_COLLECTION = "EXTRA_COLLECTION";
 
-    FrameLayout mMainLayout;
 
-    public static ColorFragment newInstance(int backgroundColor) {
+    FrameLayout mFragmentLayout;
+
+    public static ColorFragment newInstance(int position, Collection collection, int backgroundColor) {
         ColorFragment fragment = new ColorFragment();
         Bundle bdl = new Bundle();
         bdl.putInt(EXTRA_COLOR, backgroundColor);
+        bdl.putInt(EXTRA_POS, position);
+        bdl.putParcelable(EXTRA_COLLECTION, collection);
+
+        /*if (collection != null && collection.getBitmap() != null) {
+            Bitmap b = collection.getBitmap();
+            ByteArrayOutputStream bs = new ByteArrayOutputStream();
+            b.compress(Bitmap.CompressFormat.PNG, 50, bs);
+            bdl.putByteArray("byteArray", bs.toByteArray());
+            bdl.putBoolean("isBmpSet", false);
+
+        } else {
+            bdl.putBoolean("isBmpSet", false);
+        }*/
+
         fragment.setArguments(bdl);
         return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_dummy, container, false);
+        View v = inflater.inflate(R.layout.fragment_collectionview, container, false);
         Bundle bdl = getArguments();
 
-        mMainLayout = (FrameLayout) v.findViewById(R.id.main_layout);
+        mFragmentLayout = (FrameLayout) v.findViewById(R.id.fragment_layout);
 
-        LayerDrawable bgDrawable = (LayerDrawable) mMainLayout.getBackground();
+        LayerDrawable bgDrawable = (LayerDrawable) mFragmentLayout.getBackground();
         GradientDrawable shape = (GradientDrawable) bgDrawable.findDrawableByLayerId(R.id.background_shape);
         shape.setColor(bdl.getInt(EXTRA_COLOR));
+
+        TextView tv = (TextView) v.findViewById(R.id.header);
+        tv.setText("Position - " + bdl.getInt(EXTRA_POS));
+
+        Collection collection = bdl.getParcelable(EXTRA_COLLECTION);
+
+        if (collection != null) {
+            Bitmap bmp = null;
+            bmp = CollageHelper.doCollage(collection);
+            if (bmp != null) {
+                ImageView imgView = (ImageView) v.findViewById(R.id.collage);
+                imgView.setImageBitmap(bmp);
+            }
+        }
 
         return v;
     }

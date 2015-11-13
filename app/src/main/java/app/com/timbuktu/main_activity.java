@@ -24,20 +24,16 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.TranslateAnimation;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Locale;
 
-import app.com.timbuktu.service.Collections;
-import app.com.timbuktu.service.CollectionsWorkerTask;
+import app.com.timbuktu.collections.CollectionsWorkerTask;
+import app.com.timbuktu.collections.ICollectionResults;
+import app.com.timbuktu.collections.Collections;
 import app.com.timbuktu.service.SyncMediaDetails;
 import app.com.timbuktu.util.SystemUiHider;
 import criteria.Criteria;
