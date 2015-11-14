@@ -202,16 +202,26 @@ public class CollectionsWorkerTask {
                 }
 
                 if (found && isDefaultCriteriaMet(id)) {
-                    coll.add(id);
+                    coll.addWithTS(id, item.getTimeStamp());
                 } else if (coll.size() != 0) {
                     mCollections.add(coll);
                     coll.reset();
+                    //coll.addWithTS(id, item.getTimeStamp());
                 } else if (found) {
-
                     mCollections.add(coll);
                     coll.reset();
-                    coll.add(id);
+                    coll.addWithTS(id, item.getTimeStamp());
+                } else {
+                    //for (Collection aCollection: mCollections) {
+                    //}
+                }
 
+                if (coll.size() == 1) {
+                    ArrayList<String> places = item.getPlaces();
+                    if (places == null || places.size() == 0) {
+                        continue;
+                    }
+                    coll.setPlaces(places);
                 }
             }
 

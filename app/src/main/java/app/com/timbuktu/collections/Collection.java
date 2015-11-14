@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app.com.timbuktu.MediaItem;
@@ -14,6 +15,11 @@ import app.com.timbuktu.collage.CollageHelper;
 
 public class Collection implements Parcelable {
     private ArrayList<Integer> mCollection = new ArrayList<>();
+
+    private long startTime = 0;
+    private long endTime = 0;
+
+    private ArrayList<String> mPlaces = new ArrayList<>();
     //private Bitmap mCollage = null;
     /**
      * Constructs a Collection from a Parcel
@@ -26,16 +32,17 @@ public class Collection implements Parcelable {
         mCollection = new ArrayList<>();
         for (Integer i: copy.get())
             mCollection.add(i);
-        /*Bitmap original = copy.getBitmap();
-        if (original != null)
-            mCollage = Bitmap.createBitmap(original.getWidth(), original.getHeight(), original.getConfig());
-        else
-            mCollage = null;*/
+        startTime = copy.getStartTime();
+        endTime = copy.getEndTime();
+
+        mPlaces = copy.getPlaces();
     }
 
     public Collection (Parcel parcel) {
         mCollection = parcel.readArrayList(Collection.class.getClassLoader());
-        //mCollage = parcel.readParcelable(null);
+        startTime = parcel.readLong();
+        endTime = parcel.readLong();
+        parcel.readStringList(mPlaces);
     }
 
     @Override
@@ -46,7 +53,9 @@ public class Collection implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeList(mCollection);
-        //dest.writeParcelable(mCollage, flags);
+        dest.writeLong(startTime);
+        dest.writeLong(endTime);
+        dest.writeStringList(mPlaces);
     }
 
     // Method to recreate a Question from a Parcel
@@ -74,8 +83,46 @@ public class Collection implements Parcelable {
         mCollection = copy;
     }
 
+    public long getStartTime() {
+        return this.startTime;
+    }
+
+    public void setStartTime(long startTime) {
+       this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return this.endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public ArrayList<String> getPlaces() {
+        return this.mPlaces;
+    }
+
+    public void setPlaces(ArrayList<String> newPlaces) {
+        if (newPlaces == null || newPlaces.size() == 0)
+            return;
+
+        mPlaces = new ArrayList<>();
+        for (String place: newPlaces) {
+            if (!mPlaces.contains(place)) {
+                mPlaces.add(place);
+            }
+        }
+    }
+
     public void add(Integer val) {
         mCollection.add(val);
+    }
+
+    public void addWithTS(Integer val, long timeStamp) {
+        mCollection.add(val);
+        startTime = (startTime == 0) ? timeStamp : Math.min(startTime, timeStamp);
+        endTime = (endTime == 0) ? timeStamp : Math.max(endTime, timeStamp);
     }
 
     public Integer at(int index) {
