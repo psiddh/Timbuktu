@@ -197,7 +197,8 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (places.size() == 0) {
+
+            if (isValidLatLng(lat, lng) && !arePlacesSet(places)) {
                 places = getAddress(lat, lng);
             }
 
@@ -243,5 +244,29 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
             return false;
 
         return (cur.getInt(mFileMimeType) == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
+    }
+
+    private boolean isValidLatLng(double lat, double lng){
+        if (lat == 0 && lng == 0)
+            return false; // Special case!
+        if(lat < -90 || lat > 90) {
+            return false;
+        } else if(lng < -180 || lng > 180) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean arePlacesSet(ArrayList<String> places) {
+        boolean set = false;
+        if (places == null || places.size() == 0)
+            return set;
+
+        for (String val: places) {
+            if (val != null && !val.equals("")) {
+                set = true;
+            }
+        }
+        return set;
     }
 }

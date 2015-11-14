@@ -8,6 +8,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app.com.timbuktu.MediaItem;
@@ -170,7 +171,7 @@ public class CollectionsWorkerTask {
                 Log.d(TAG, "No Cirteria set. Abort");
                 return;
             }
-            ConcurrentHashMap cache = sIntance.getMap();
+            LinkedHashMap cache = sIntance.getMap();
             ArrayList<String> placeFound = mCriterion.getPlaces();
             Pair<Long, Long> dateFound = mCriterion.getDateRange();
             boolean found = false;

@@ -5,6 +5,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,12 +17,13 @@ public class SyncCache {
     private HashSet<String> mUniqueCities = new HashSet<>();
     private HashSet<String> mUniqueStates = new HashSet<>();
     private HashSet<String> mUniqueCountries = new HashSet<>();
-    
-    private static ConcurrentHashMap<Integer, MediaItem> mMap;
+
+    private static LinkedHashMap<Integer, MediaItem> mMap;
+
     private static SyncCache sInstance = null;
     public static SyncCache getInstance() {
         if (sInstance == null) {
-            mMap = new ConcurrentHashMap<>();
+            mMap = new LinkedHashMap<>();
             sInstance = new SyncCache();
         }
         return sInstance;
@@ -56,7 +58,7 @@ public class SyncCache {
     }
 
 
-    public ConcurrentHashMap<Integer, MediaItem> getMap() {
+    public LinkedHashMap<Integer, MediaItem> getMap() {
         return mMap;
     }
 

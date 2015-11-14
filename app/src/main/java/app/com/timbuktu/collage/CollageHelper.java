@@ -13,6 +13,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,9 +24,9 @@ import app.com.timbuktu.collections.Collection;
 public  class CollageHelper {
 
     public static Bitmap doCollage(Collection collection) {
-        ConcurrentHashMap<Integer, MediaItem> cache = SyncCache.getInstance().getMap();
+        LinkedHashMap<Integer, MediaItem> cache = SyncCache.getInstance().getMap();
 
-        String [] paths = new String[collection.size()];
+            String [] paths = new String[collection.size()];
         int index = 0;
 
         for (Integer id : collection.get()) {
@@ -36,7 +37,7 @@ public  class CollageHelper {
                 }
             }
         }
-        return CollageHelper.doCollageInternal(paths,500, 100, 100, 3);
+        return CollageHelper.doCollageInternal(paths, 500, 100, 100, 3);
     }
 
     public static Bitmap doCollageInternal(String[] images, int totalWidth, int imgWidth, int imgHeight,

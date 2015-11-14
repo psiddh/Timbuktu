@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -31,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.ref.WeakReference;
 
 import app.com.timbuktu.R;
 import app.com.timbuktu.collage.CollageHelper;
@@ -49,6 +51,37 @@ public class ColorFragment extends Fragment {
 
 
     FrameLayout mFragmentLayout;
+
+    private class CollageWorkerTask extends AsyncTask<String, Void, Bitmap> {
+        private final WeakReference<ImageView> imageViewReference;
+        private Collection collection;
+        //CustomViewFlipper flipper;
+        public CollageWorkerTask(ImageView imageView, Collection collection) {
+            // Use a WeakReference to ensure the ImageView can be garbage collected
+            this.imageViewReference = new WeakReference<ImageView>(imageView);
+            this.collection = collection;
+        }
+
+        @Override
+        protected Bitmap doInBackground(String... params) {
+            return CollageHelper.doCollage(collection);
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            if (imageViewReference != null && bitmap != null) {
+                final ImageView imageView = (ImageView)imageViewReference.get();
+                imageView.setImageBitmap(bitmap);
+            }
+
+            if (imageViewReference != null && bitmap == null) {
+                final ImageView imageView = (ImageView)imageViewReference.get();
+                imageView.setImageResource(android.R.drawable.ic_menu_gallery);
+            }
+        }
+    }
+
+    private CollageWorkerTask mTask;
 
     public static ColorFragment newInstance(int position, Collection collection, int backgroundColor) {
         ColorFragment fragment = new ColorFragment();
@@ -84,17 +117,15 @@ public class ColorFragment extends Fragment {
         shape.setColor(bdl.getInt(EXTRA_COLOR));
 
         TextView tv = (TextView) v.findViewById(R.id.header);
+        Collection collection = bdl.getParcelable(EXTRA_COLLECTION);
         tv.setText("Position - " + bdl.getInt(EXTRA_POS));
 
-        Collection collection = bdl.getParcelable(EXTRA_COLLECTION);
-
         if (collection != null) {
-            Bitmap bmp = null;
-            bmp = CollageHelper.doCollage(collection);
-            if (bmp != null) {
-                ImageView imgView = (ImageView) v.findViewById(R.id.collage);
-                imgView.setImageBitmap(bmp);
-            }
+            tv.setText("Position - " + bdl.getInt(EXTRA_POS) + " # of Pics :" + collection.size());
+
+            ImageView imgView = (ImageView) v.findViewById(R.id.collage);
+            mTask = new CollageWorkerTask(imgView, collection);
+            mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
 
         return v;

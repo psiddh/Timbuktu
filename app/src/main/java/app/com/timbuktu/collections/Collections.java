@@ -65,6 +65,9 @@ public class Collections implements Parcelable {
     }
 
     public void add(Collection val) {
+        if (val == null || val.size() == 0)
+            return;
+
         Collection copyVal = new Collection(val);
         mCollections.add(copyVal);
     }
