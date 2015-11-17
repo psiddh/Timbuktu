@@ -31,9 +31,10 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/collage"
-            android:scaleType="fitXY"
             android:layout_below="@id/header"
+            android:adjustViewBounds="true"
             android:src="@android:drawable/ic_menu_gallery"
+            android:background="@drawable/collage_border"
             />
 
         <TextView

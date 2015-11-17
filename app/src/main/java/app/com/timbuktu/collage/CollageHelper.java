@@ -4,6 +4,7 @@ package app.com.timbuktu.collage;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.media.ExifInterface;
@@ -37,7 +38,7 @@ public  class CollageHelper {
                 }
             }
         }
-        return CollageHelper.doCollageInternal(paths, 500, 100, 100, 3);
+        return CollageHelper.doCollageInternal(paths, 600, 200, 200, 3);
     }
 
     public static Bitmap doCollageInternal(String[] images, int totalWidth, int imgWidth, int imgHeight,
@@ -103,7 +104,7 @@ public  class CollageHelper {
                 b = bmpIter.next();
                 if (b != null && !b.isRecycled()) {
                     //canvas.drawBitmap(b, left, top, null);
-                    canvas.drawBitmap(b, null, new Rect(left, top, right, bottom), null);
+                    canvas.drawBitmap(addWhiteBorder(b,10), null, new Rect(left, top, right, bottom), null);
                 } else {
                     continue;
                 }
@@ -120,8 +121,8 @@ public  class CollageHelper {
 
             // Is this a hack?
             //if (bmpList.size() % preferredNumOfItemsWidthWise == 0) {
-            if (b != null && !b.isRecycled())
-                canvas.drawBitmap(b, null, new Rect(left, top, right, bottom), null);
+            //if (b != null && !b.isRecycled())
+            //    canvas.drawBitmap(b, null, new Rect(left, top, right, bottom), null);
             //}
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,5 +227,13 @@ public  class CollageHelper {
         }
 
         return rotate;
+    }
+
+    private static Bitmap addWhiteBorder(Bitmap bmp, int borderSize) {
+        Bitmap bmpWithBorder = Bitmap.createBitmap(bmp.getWidth() + borderSize * 2, bmp.getHeight() + borderSize * 2, bmp.getConfig());
+        Canvas canvas = new Canvas(bmpWithBorder);
+        canvas.drawColor(Color.WHITE);
+        canvas.drawBitmap(bmp, borderSize, borderSize, null);
+        return bmpWithBorder;
     }
 }

@@ -24,6 +24,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +64,19 @@ public class ColorFragment extends Fragment {
         }
 
         @Override
+        protected void onPreExecute () {
+            final ImageView imageView = (ImageView)imageViewReference.get();
+            int height, width;
+            height = imageView.getHeight();
+            width = imageView.getWidth();
+
+            height = imageView.getMeasuredHeight();
+            width = imageView.getMeasuredWidth();
+
+            Log.d("", "height = " + height + "  width : " + width);
+        }
+
+        @Override
         protected Bitmap doInBackground(String... params) {
             return CollageHelper.doCollage(collection);
         }
@@ -72,11 +86,22 @@ public class ColorFragment extends Fragment {
             if (imageViewReference != null && bitmap != null) {
                 final ImageView imageView = (ImageView)imageViewReference.get();
                 imageView.setImageBitmap(bitmap);
+                //imageView.setScaleType(ImageView.ScaleType.CENTER);
+
             }
 
+            final ImageView imageView = (ImageView)imageViewReference.get();
+            int height, width;
+            height = imageView.getHeight();
+            width = imageView.getWidth();
+
+            height = imageView.getMeasuredHeight();
+            width = imageView.getMeasuredWidth();
+
             if (imageViewReference != null && bitmap == null) {
-                final ImageView imageView = (ImageView)imageViewReference.get();
-                imageView.setImageResource(android.R.drawable.ic_menu_gallery);
+                final ImageView imageView1 = (ImageView)imageViewReference.get();
+                imageView1.setImageResource(android.R.drawable.ic_menu_gallery);
+                //imageView1.setScaleType(ImageView.ScaleType.FIT_XY);
             }
         }
     }
