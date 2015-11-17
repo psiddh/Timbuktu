@@ -335,7 +335,12 @@ public class VoiceInputView extends View implements RecognitionListener {
             int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                     40, getContext().getResources().getDisplayMetrics());
             mCurrentRadius /= 4;
-            mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
+            //mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
+
+            ArrayList<String> matchResults = new ArrayList<>();
+            matchResults.add("San Francisco");
+            mOnVoiceInputListener.onVoiceMatchResults(matchResults);
+
 
         }
         done();

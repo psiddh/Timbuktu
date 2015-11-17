@@ -30,8 +30,9 @@ public class CollectionsWorkerTask {
 
     private static final int TASK_STOPPED = -1;
     private static final int TASK_PRESTART = 1;
-    private static final int TASK_INPROGRESS = 1;
-    private static final int TASK_COMPLETED= 2;
+    private static final int TASK_STARTED = 0;
+    private static final int TASK_INPROGRESS = 2;
+    private static final int TASK_COMPLETED= 3;
 
     private int mTaskState = TASK_PRESTART;
 
@@ -41,7 +42,7 @@ public class CollectionsWorkerTask {
     }
 
     public void start() {
-        if (!canStart()) {
+        if (!canStart() && mTaskState != TASK_STARTED) {
             Log.d(TAG, "Cannot start as it is already attempted to start");
             return;
         }
@@ -55,11 +56,13 @@ public class CollectionsWorkerTask {
 
         mHandler = new Handler(mHandlerThread.getLooper());
         mCriterion = new Criteria();
+
+        mTaskState = TASK_STARTED;
     }
 
     public void runWithCriteria(Criteria criterion) {
         if (!canStart()) {
-            Log.d(TAG, "Cannot start as it is already attempted to start");
+            Log.d(TAG, "Cannot run as it is already attempted to start");
             return;
         }
 
@@ -98,27 +101,27 @@ public class CollectionsWorkerTask {
 
 
     public void stop() {
-        if (mTaskState != TASK_STOPPED) {
-            Log.d(TAG, "The task is already stopped!");
+        if (mTaskState == TASK_STOPPED) {
+            Log.d(TAG, "The task is already stopped or has not been started!");
             return;
         }
         try {
             assertHandler();
             mHandlerThread.quitSafely();
+            mHandler.removeCallbacks(null);
+            mCriterion.clearAll();
 
         } catch (IllegalStateException ex) {
             ex.printStackTrace();
         }
 
         finally {
-            mHandler.removeCallbacks(null);
-            mCriterion.clearAll();
             mTaskState = TASK_STOPPED;
         }
     }
 
     private boolean canStart() {
-        return (mTaskState == TASK_PRESTART);
+        return (mTaskState != TASK_INPROGRESS);
     }
 
     private void assertHandler() throws IllegalStateException {

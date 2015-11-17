@@ -162,7 +162,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
         mTask.runWithCriteria(criteria);
 
         //hacker dojo....
-        bounce();
+        //bounce();
         //Message mesg = new Message();
         //mesg.what = SHOW_NEXT_ACTIVITY;
         //mTextSwictherHandler.sendMessageDelayed(mesg, 10000);
@@ -182,6 +182,8 @@ public class main_activity extends Activity implements Animation.AnimationListen
             mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
             mSwitcher.setText(mMatchResults.get(0) + "...");
             bounce();
+
+            updateFinalTextSwitcherText();
             //Message mesg = new Message();
             //mesg.what = SHOW_NEXT_ACTIVITY;
             //mTextSwictherHandler.sendMessageDelayed(mesg, 2500);
@@ -399,7 +401,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
 
     @Override
     public void onVoiceInputStart() {
-
+        mTask.start();
     }
 
     @Override
@@ -415,12 +417,15 @@ public class main_activity extends Activity implements Animation.AnimationListen
         msg.what = SHOW_ANIM_TEXT;
         mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
         mTextSwictherHandler.sendMessageDelayed(msg, mTimeOutTextVals);
+        mTask.start();
     }
 
     @Override
     public void onVoiceStatus(int code, String text) {
         switch (code) {
             case 0: // Error
+                mTask.stop();
+                break;
             case 1: // Ready for speech
                 mMatchResults.clear();
                 mMatchResults.add(text);
