@@ -24,6 +24,8 @@ import java.util.ArrayList;
 
 public class Circle extends View implements RecognitionListener {
 
+    private static final boolean DEBUG = true;
+
     private static final String TAG = "Circle:";
     private static final int START_ANGLE_POINT = 120;
 
@@ -267,7 +269,15 @@ public class Circle extends View implements RecognitionListener {
     @Override
     public void onError(int i) {
         stopListening();
-        mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
+        if (DEBUG) {
+            if (i == 6) {
+                ArrayList<String> matchResults = new ArrayList<String>();
+                matchResults.add("San Francisco");
+                mOnVoiceInputListener.onVoiceMatchResults(matchResults);
+            }
+        } else {
+            mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
+        }
         //ArrayList<String> matchResults = new ArrayList<>();
         //matchResults.add("San Francisco");
         //mOnVoiceInputListener.onVoiceMatchResults(matchResults);
@@ -302,12 +312,11 @@ public class Circle extends View implements RecognitionListener {
         mOnVoiceInputListener = OnVoiceInputListener;
     }
 
-    public static interface OnVoiceInputListener{
-        public void onVoiceInputStart();
-        public void onVoiceInputDone(String text);
-        public void onVoiceMatchResults( ArrayList<String> matchResults);
-        public void onVoiceStatus(int code, String text);
-
+    public interface OnVoiceInputListener{
+        void onVoiceInputStart();
+        void onVoiceInputDone(String text);
+        void onVoiceMatchResults( ArrayList<String> matchResults);
+        void onVoiceStatus(int code, String text);
     }
 
 }

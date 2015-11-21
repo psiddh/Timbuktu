@@ -266,7 +266,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
         mSystemUiHider.setup();
 
         mTask = new CollectionsWorkerTask(this);
-        mTask.start();
+        //mTask.start();
 
         //mVoiceInputView = (VoiceInputView) findViewById(R.id.voiceview);
         //mVoiceInputView.setOnVoiceInputListener(this);
@@ -417,7 +417,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
         msg.what = SHOW_ANIM_TEXT;
         mTextSwictherHandler.removeMessages(SHOW_ANIM_TEXT, mTimeOutTextVals);
         mTextSwictherHandler.sendMessageDelayed(msg, mTimeOutTextVals);
-        mTask.start();
+        //mTask.start();
     }
 
     @Override
@@ -433,6 +433,7 @@ public class main_activity extends Activity implements Animation.AnimationListen
                 msg.what = SHOW_TEXT;
                 mTextSwictherHandler.removeMessages(SHOW_TEXT, 1000);
                 mTextSwictherHandler.sendMessageDelayed(msg, 0);
+                mTask.start();
                 break;
             default:
                 break;

@@ -77,7 +77,8 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
 
     @Override
     protected void onProgressUpdate(MediaItem... params) {
-        mDialog.incrementProgressBy(params.length);
+        if ((mDialog != null) && mDialog.isShowing())
+            mDialog.incrementProgressBy(params.length);
     }
 
     @Override
@@ -87,7 +88,9 @@ public class SyncMediaDetails extends AsyncTask<Object, MediaItem, Integer> {
 
     @Override
     protected void onPostExecute(Integer result) {
-        mDialog.dismiss();
+        if ((mDialog != null) && mDialog.isShowing())
+            mDialog.dismiss();
+        mDialog = null;
     }
 
     private void setupCursor(Cursor cur) {

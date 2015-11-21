@@ -100,4 +100,28 @@ public class collections_activity extends FragmentActivity {
         }
     }
 
+    public void onLowMemory() {
+        super.onLowMemory();
+        mFlippableStack = null;
+        mViewPagerFragments = new ArrayList<>();
+        mPageAdapter = null;
+        mCollections = null;
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        mFlippableStack = null;
+        mViewPagerFragments = new ArrayList<>();
+        mPageAdapter = null;
+        mCollections = null;
+    }
+
+    public void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mFlippableStack = null;
+        mViewPagerFragments = new ArrayList<>();
+        mPageAdapter = null;
+        mCollections = null;
+    }
+
 }

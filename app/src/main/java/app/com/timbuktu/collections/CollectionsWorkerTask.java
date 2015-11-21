@@ -51,6 +51,7 @@ public class CollectionsWorkerTask {
             Log.d(TAG, "Callback not set! So return");
             return;
         }
+        mCollections.reset();
         mHandlerThread = new HandlerThread(TAG);
         mHandlerThread.start();
 
@@ -180,10 +181,16 @@ public class CollectionsWorkerTask {
             boolean found = false;
             Collection coll = new Collection();
 
-            ArrayList<Integer> ids = new ArrayList<>();
-            for (Object i : cache.keySet()) {
-                Integer id = (Integer) i;
+            //ArrayList<Integer> ids = new ArrayList<>();
+            int length = cache.size();
+            Object[] ids = cache.keySet().toArray();
+            for (int i = 0 ; i < length; i++) {
+            //for (Object i : cache.keySet()) {
+                //int id = cache.get(i);
+                Integer id = (Integer) ids[i];
                 MediaItem item = sIntance.getMediaItem(id);
+                if (item == null)
+                    continue;
                 found = false;
 
                 if (bPlaceSet && bDateRangeSet) {
