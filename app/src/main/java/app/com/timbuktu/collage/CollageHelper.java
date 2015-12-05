@@ -27,7 +27,7 @@ public  class CollageHelper {
     public static Bitmap doCollage(Collection collection) {
         LinkedHashMap<Integer, MediaItem> cache = SyncCache.getInstance().getMap();
 
-            String [] paths = new String[collection.size()];
+        String [] paths = new String[collection.size()];
         int index = 0;
 
         for (Integer id : collection.get()) {
@@ -108,7 +108,7 @@ public  class CollageHelper {
                 } else {
                     continue;
                 }
-                if ((left + minCollageItemWidth) <= imgWidth) {
+                if ((left + minCollageItemWidth) < imgWidth) {
                     left += minCollageItemWidth;
                     right += minCollageItemWidth;
                 } else {
@@ -118,12 +118,7 @@ public  class CollageHelper {
                     bottom += minCollageItemHeight;
                 }
             }
-
-            // Is this a hack?
-            //if (bmpList.size() % preferredNumOfItemsWidthWise == 0) {
-            //if (b != null && !b.isRecycled())
-            //    canvas.drawBitmap(b, null, new Rect(left, top, right, bottom), null);
-            //}
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
