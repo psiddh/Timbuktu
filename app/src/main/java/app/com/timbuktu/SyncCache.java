@@ -64,18 +64,29 @@ public class SyncCache {
 
     // Util function
     public ArrayList<String> getMatchingPlacesFromUserFilter(String UserFilter) {
+
         ArrayList<String> places = new ArrayList<>();
         StringBuilder concat = new StringBuilder();
 
         String filter = UserFilter;
         String [] words = filter.split("\\s+");
 
+        if (UserFilter != null && words.length == 1) {
+            if (mUniqueCities.contains(UserFilter))
+                places.add(UserFilter);
+            if (mUniqueStates.contains(UserFilter))
+                places.add(UserFilter);
+            if (mUniqueCountries.contains(UserFilter))
+                places.add(UserFilter);
+            return places;
+        }
+
+
         for (int i = 0; i < words.length; i++) {
             concat.setLength(0);
             concat.append(words[i] + ((i + 1 == words.length) ? "" : " "));
-            for (int j = i+1; j < words.length; j++) {
+            for (int j = i + 1; j < words.length; j++) {
                 concat.append(words[j] + ((j + 1 == words.length) ? "" : " "));
-
                 if (mUniqueCities.contains(concat.toString()))
                     places.add(concat.toString());
                 if (mUniqueStates.contains(concat.toString()))

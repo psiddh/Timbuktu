@@ -66,6 +66,8 @@ public class VoiceInputView extends View implements RecognitionListener {
 
     private Handler mHandler = new android.os.Handler();
 
+    private boolean TESTING = true;
+
     private Runnable mAnimateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -135,6 +137,7 @@ public class VoiceInputView extends View implements RecognitionListener {
 
     @Override
     protected void onFocusChanged (boolean gainFocus, int direction, Rect previouslyFocusedRect) {
+        super.onFocusChanged(gainFocus,direction, previouslyFocusedRect);
         bCancelAnimation = !gainFocus;
         if (bCancelAnimation) {
             if(mAnimatorSet.isRunning()){
@@ -332,14 +335,14 @@ public class VoiceInputView extends View implements RecognitionListener {
         }
         if(mOnVoiceInputListener != null){
             mState = STATE_NORMAL;
-            int px = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    40, getContext().getResources().getDisplayMetrics());
-            mCurrentRadius /= 4;
-            //mOnVoiceInputListener.onVoiceStatus(0, "Oops! Please try again");
 
-            ArrayList<String> matchResults = new ArrayList<>();
-            matchResults.add("San Francisco");
-            mOnVoiceInputListener.onVoiceMatchResults(matchResults);
+            if (TESTING) {
+                ArrayList<String> matchResults = new ArrayList<>();
+                matchResults.add("San Francisco");
+                mOnVoiceInputListener.onVoiceMatchResults(matchResults);
+            } else {
+                mOnVoiceInputListener.onVoiceStatus(0, "Sorry. I did not get you. Please try again!");
+            }
 
 
         }

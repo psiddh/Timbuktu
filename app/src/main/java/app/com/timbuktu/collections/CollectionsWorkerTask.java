@@ -211,7 +211,12 @@ public class CollectionsWorkerTask {
                     }
                 }
 
-                if (found && isDefaultCriteriaMet(id)) {
+                if (id == 3955) {
+                    Log.d(TAG, "");
+                    id++;
+                    id--;
+                }
+                /*if (found && isDefaultCriteriaMet(id)) {
                     coll.addWithTS(id, item.getTimeStamp());
                 } else if (coll.size() != 0) {
                     mCollections.add(coll);
@@ -224,6 +229,20 @@ public class CollectionsWorkerTask {
                 } else {
                     //for (Collection aCollection: mCollections) {
                     //}
+                }*/
+                if (found && coll.size() == 0) {
+                    coll.addWithTS(id, item.getTimeStamp());
+                } else if (found) {
+                    int prevId = coll.at(coll.size() - 1);
+                    if (isDefaultCriteriaMet(id, prevId)) {
+                        coll.addWithTS(id, item.getTimeStamp());
+                    } else if (coll.size() > 0) {
+                        mCollections.add(coll);
+                        coll.reset();
+                    }
+                } else if (coll.size() > 0){
+                    mCollections.add(coll);
+                    coll.reset();
                 }
 
                 if (coll.size() == 1) {
@@ -239,18 +258,20 @@ public class CollectionsWorkerTask {
             mCallback.onResults(mCollections);
         }
 
-        private boolean isDefaultCriteriaMet(Integer id) {
-            if (mCollections.size() == 0)
-                return true;
-            Collection collection = mCollections.at(mCollections.size() - 1);
-            if (collection.size() == 0)
-                return true;
-            Integer lastId = collection.at(collection.size() - 1);
+        private boolean isDefaultCriteriaMet(Integer id, Integer firtsId) {
+            //if (mCollections.size() == 0)
+            //    return true;
+            //Collection collection = mCollections.at(mCollections.size() - 1);
+            //if (collection.size() == 0)
+            //    return true;
+            //Integer lastId = collection.at(collection.size() - 1);
 
             MediaItem currItem = sIntance.getMediaItem(id);
-            MediaItem lastItem = sIntance.getMediaItem(lastId);
+            MediaItem lastItem = sIntance.getMediaItem(firtsId);
+            long curTs = currItem.getTimeStamp();
+            long lastTs = lastItem.getTimeStamp();
 
-            if (Math.abs(currItem.getTimeStamp() - lastItem.getTimeStamp()) <= Criteria.DEFAULT_TIMESTAMP_DIFF) {
+            if (Math.abs(curTs - lastTs) <= Criteria.DEFAULT_TIMESTAMP_DIFF) {
                 return true;
             }
             return false;
