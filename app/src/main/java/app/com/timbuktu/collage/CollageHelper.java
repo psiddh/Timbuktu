@@ -118,7 +118,7 @@ public  class CollageHelper {
                     bottom += minCollageItemHeight;
                 }
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         }

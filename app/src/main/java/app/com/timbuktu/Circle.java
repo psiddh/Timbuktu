@@ -272,7 +272,8 @@ public class Circle extends View implements RecognitionListener {
         if (DEBUG) {
             if (i == 6) {
                 ArrayList<String> matchResults = new ArrayList<String>();
-                matchResults.add("San Francisco");
+                String place = "California";
+                matchResults.add(place);
                 mOnVoiceInputListener.onVoiceMatchResults(matchResults);
             }
         } else {

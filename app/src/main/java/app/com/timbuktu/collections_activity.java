@@ -23,7 +23,7 @@ public class collections_activity extends FragmentActivity {
     private static final String TAG = "collections_activity";
 
     private int NUMBER_OF_FRAGMENTS = 0;
-    private int MAX_NUMBER_OF_FRAGMENTS = 25;
+    private int MAX_NUMBER_OF_FRAGMENTS = 500;
 
 
     private FlippableStackView mFlippableStack;
@@ -76,9 +76,13 @@ public class collections_activity extends FragmentActivity {
         ValueInterpolator interpolatorG = new ValueInterpolator(0, NUMBER_OF_FRAGMENTS - 1, endG, startG);
         ValueInterpolator interpolatorB = new ValueInterpolator(0, NUMBER_OF_FRAGMENTS - 1, endB, startB);
 
+        int total = 0;
         for (int i = 0; i < NUMBER_OF_FRAGMENTS; ++i) {
             mViewPagerFragments.add(ColorFragment.newInstance(i, mCollections.at(i), Color.argb(255, (int) interpolatorR.map(i), (int) interpolatorG.map(i), (int) interpolatorB.map(i))));
+            total += mCollections.at(i).size();
         }
+
+        Log.d(TAG, "XXXX_TOTAL_COUNT:" + total);
     }
 
     private class ColorFragmentAdapter extends FragmentPagerAdapter {

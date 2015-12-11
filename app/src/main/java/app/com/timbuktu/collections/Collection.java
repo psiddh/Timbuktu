@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import app.com.timbuktu.MediaItem;
 import app.com.timbuktu.SyncCache;
 import app.com.timbuktu.collage.CollageHelper;
+import criteria.Criteria;
 
 public class Collection implements Parcelable {
     private ArrayList<Integer> mCollection = new ArrayList<>();
@@ -122,7 +123,7 @@ public class Collection implements Parcelable {
     public void addWithTS(Integer val, long timeStamp) {
         mCollection.add(val);
         startTime = (startTime == 0) ? timeStamp : Math.min(startTime, timeStamp);
-        endTime = (endTime == 0) ? timeStamp : Math.max(endTime, timeStamp);
+        endTime = startTime + Criteria.DEFAULT_TIMESTAMP_DIFF;
     }
 
     public Integer at(int index) {
@@ -134,6 +135,7 @@ public class Collection implements Parcelable {
 
     public void reset() {
         mCollection.clear();
+        startTime = endTime = 0;
         //if (mCollage != null && !mCollage.isRecycled())
         //    mCollage.recycle();
         //collage();

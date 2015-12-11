@@ -9,6 +9,7 @@ import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app.com.timbuktu.MediaItem;
@@ -211,11 +212,6 @@ public class CollectionsWorkerTask {
                     }
                 }
 
-                if (id == 3955) {
-                    Log.d(TAG, "");
-                    id++;
-                    id--;
-                }
                 /*if (found && isDefaultCriteriaMet(id)) {
                     coll.addWithTS(id, item.getTimeStamp());
                 } else if (coll.size() != 0) {
@@ -230,19 +226,68 @@ public class CollectionsWorkerTask {
                     //for (Collection aCollection: mCollections) {
                     //}
                 }*/
+                if (item.getPath().equalsIgnoreCase("/storage/emulated/0/DCIM/Camera/IMG_20141006_015634.jpg") ||
+                    item.getPath().equalsIgnoreCase("/storage/emulated/0/DCIM/Camera/IMG_20141006_051001.jpg")) {
+                    Log.d(TAG, "");
+                    id++;
+                    id--;
+                }
+
+                if (item.getPath().equalsIgnoreCase("/storage/emulated/0/DCIM/Camera/IMG_20141006_013111.jpg") ||
+                        item.getPath().equalsIgnoreCase("/storage/emulated/0/DCIM/Camera/IMG_20141006_012416.jpg")) {
+                    Log.d(TAG, "");
+                    id++;
+                    id--;
+                }
+
+                if (item.getPath().equalsIgnoreCase("/storage/emulated/0/DCIM/Camera/IMG_20141006_014716.jpg")) {
+                    Log.d(TAG, "");
+                    id++;
+                    id--;
+                }
+
+                {
+                    ArrayList<Integer> arr = new ArrayList<>();
+                    arr.add(6673);
+                    arr.add(6674);
+                    arr.add(6699);
+                    arr.add(6700);
+
+
+                    if (arr.contains(id)) {
+                        Log.d(TAG, "");
+                        id++;
+                        id--;
+                    }
+
+                    if (id >= 6540 && id <= 6588) {
+                        Log.d(TAG, "");
+                        id++;
+                        id--;
+                    }
+                }
+
+                if (canAddToOtherCollections(id)) {
+                    continue;
+                }
                 if (found && coll.size() == 0) {
                     coll.addWithTS(id, item.getTimeStamp());
                 } else if (found) {
                     int prevId = coll.at(coll.size() - 1);
+                    MediaItem prevItem = sIntance.getMediaItem(prevId);
+
                     if (isDefaultCriteriaMet(id, prevId)) {
-                        coll.addWithTS(id, item.getTimeStamp());
+                        coll.addWithTS(id, prevItem.getTimeStamp());
                     } else if (coll.size() > 0) {
                         mCollections.add(coll);
                         coll.reset();
                     }
-                } else if (coll.size() > 0){
-                    mCollections.add(coll);
-                    coll.reset();
+                } else {
+
+                    if (coll.size() > 0) {
+                        mCollections.add(coll);
+                        coll.reset();
+                    }
                 }
 
                 if (coll.size() == 1) {
@@ -257,6 +302,47 @@ public class CollectionsWorkerTask {
             mTaskState = TASK_COMPLETED; // Task completed
             mCallback.onResults(mCollections);
         }
+
+        private boolean canAddToOtherCollections (Integer id) {
+            MediaItem currItem = sIntance.getMediaItem(id);
+
+            for (int counter = 0; counter < mCollections.size(); counter++) {
+                Collection coll = mCollections.at(counter);
+                if (coll.getStartTime() <= currItem.getTimeStamp() && coll.getEndTime() >= currItem.getTimeStamp()) {
+                    if (equalLists(coll.getPlaces(), currItem.getPlaces())) {
+                        coll.addWithTS(id,currItem.getTimeStamp());
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        public  boolean equalLists(List<String> a, List<String> b){
+            /*
+            // Check for sizes and nulls
+            if ((a.size() != b.size()) || (a == null && b!= null) || (a != null && b== null)){
+                return false;
+            }
+
+            if (a == null && b == null) return true;
+
+            // Sort and compare the two lists
+            java.util.Collections.sort(a);
+            java.util.Collections.sort(b);
+            return a.equals(b);*/
+
+            List<String> bigger = (a.size() >= b.size()) ? a : b;
+            List<String> smaller = (a.size() < b.size()) ? a : b;
+
+            for (String place: smaller) {
+                if (!bigger.contains(place))
+                    return false;
+            }
+
+            return true;
+        }
+
 
         private boolean isDefaultCriteriaMet(Integer id, Integer firtsId) {
             //if (mCollections.size() == 0)

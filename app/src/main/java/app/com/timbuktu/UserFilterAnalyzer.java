@@ -246,6 +246,7 @@ public class UserFilterAnalyzer implements LogUtils {
     }
 
     public UserFilterAnalyzer(Context context, String filter) {
+        if (filter == null) filter = "";
         mUserFilter = filter;
         mWords = mUserFilter.split("\\s+");
         if (DEBUG) {
