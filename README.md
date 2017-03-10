@@ -3,7 +3,7 @@
 Create Context-Aware Android Application around user pictures and videos.
 
 ### Inspiration
-Simple and intuitive way to look back at all my previous travels (say on a Mobile device)
+Simple and intuitive way to look back at all my previous travels / moments (say on a Mobile device)
 
 ### How it works
 Android based mobile application that could use any context-aware platforms (SDKs) out there, at its heart to 
